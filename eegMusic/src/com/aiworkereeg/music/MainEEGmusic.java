@@ -34,8 +34,6 @@ import android.hardware.Camera.Parameters;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
-//import android.support.v13.app.FragmentPagerAdapter;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -45,8 +43,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -58,10 +54,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aiworkereeg.launcher.MusicService;
-import com.aiworkereeg.launcher.MusicPlayerView;
-import com.aiworkereeg.launcher.MusicPlayerView.MusicPlayerThread;
-import com.aiworkereeg.launcher.R;
+import com.aiworkereeg.music.MusicService;
+import com.aiworkereeg.music.MusicPlayerView;
+import com.aiworkereeg.music.MusicPlayerView.MusicPlayerThread;
+import com.aiworkereeg.music.R;
 
 import com.neurosky.thinkgear.TGDevice;
 import com.neurosky.thinkgear.TGEegPower;
@@ -144,26 +140,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
             //Toast.makeText(this, "Bluetooth is available ir", Toast.LENGTH_LONG).show();
             doStuff();
         }	
-         
-
-        // -- camera block        
-        	//getWindow().setFormat(PixelFormat.UNKNOWN);
-        surfaceView = (SurfaceView)findViewById(R.id.camerapreview);
-        surfaceHolder = surfaceView.getHolder();
-        surfaceHolder.addCallback(this);
-        	//surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-               
-		Log.d(getString(R.string.app_name), "ir_d onCreate()"); 
-       
-      /*  Button buttonTakePicture = (Button)findViewById(R.id.takepicture);
-        buttonTakePicture.setOnClickListener(new Button.OnClickListener(){
-
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				camera.takePicture(myShutterCallback, myPictureCallback_RAW, myPictureCallback_JPG);
-			}});*/
-                  
+                           
 	}
 
 	@Override
@@ -174,7 +151,6 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	@Override
 	public void onResume() {
 		super.onResume();
-		//initializeCamera();
 	      
 		//mMusicPlayerView.getThread().unpause(); // pause game when Activity pauses
         //mMusicPlayerView.getThread().setRunning(true); //correctly destroy SurfaceHolder, ir   
@@ -198,8 +174,6 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
                 tgDevice.close();
             }
 
-          //  releaseCamera();
-
         } catch (NullPointerException e) { }
         
         Log.d(getString(R.string.app_name), "ir_d onStop()");
@@ -211,9 +185,6 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
             if (tgDevice != null) {
                 tgDevice.close();
             }
-
-           // releaseCamera();
-
         } catch (NullPointerException e) { } */
 
        // mMusicPlayerView.getThread().pause(); // pause game when Activity pauses
@@ -242,36 +213,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	       tgDevice.connect(RAW_ENABLED);
 	   }
 	}
-	
-		    
-	    // -- save bitmap of screenshot
-	public void saveBitmap(Bitmap bitmap) {
-	     //   String filePath = Environment.getExternalStorageDirectory() + File.separator + "Pictures/screenshot.png";
-	       // File imagePath = new File(filePath);
-	        
-	        File pictureFileDir = getDir();
-	        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-    	    String date = dateFormat.format(new Date());
-    	    String photoFile = "eeg_scr" + date + ".png";
-
-    	    String filePath = pictureFileDir.getPath() + File.separator + photoFile;
-    	    File imagePath = new File(filePath);
-	        
-	        FileOutputStream fos;
-	        try {
-	            fos = new FileOutputStream(imagePath);
-	            bitmap.compress(CompressFormat.PNG, 100, fos);
-	            fos.flush();
-	            fos.close();
-	           // sendMail(filePath);
-	        } catch (FileNotFoundException e) {
-	            Log.e("GREC", e.getMessage(), e);
-	        } catch (IOException e) {
-	            Log.e("GREC", e.getMessage(), e);
-	        }
-	}
-	    
-	    
+	    	    
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 	        switch (keyCode) {
@@ -282,7 +224,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	        }
 	        return super.onKeyDown(keyCode, event);
 	}
-	    	    
+	   	    
 	    
 	    
   // -- Handles messages from TGDevice 
@@ -362,35 +304,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    	 mMusicPlayerView.getThread().back_flag = false;
             				// onBackPressed();
             				} */
-	                    
-	                    	// -- camera/twitter/PrtSc
-	                    if (mMusicPlayerView.getThread().Picture_flag == true)
-        				{ 	                    	
-	                    	camera.takePicture(myShutterCallback, myPictureCallback_RAW, myPictureCallback_JPG);	                    	
-	                    	mMusicPlayerView.getThread().Picture_flag = false;
-        				}
-	                    if (mMusicPlayerView.getThread().TwitPicture_flag == true)
-        				{ 	                    	
-	                    	//camera.takePicture(myShutterCallback, myPictureCallback_RAW, myPictureCallback_JPG);		                    	                    	
-	                    	mMusicPlayerView.getThread().TwitPicture_flag = false;
-        				}
-	                    
-	                    if (mMusicPlayerView.getThread().Prtscr_flag == true)
-        				{ 	                    	
-		                    View v1 = findViewById(android.R.id.content).getRootView() ; 
-	                    	v1.setDrawingCacheEnabled(true);
-		                    myBitmap = v1.getDrawingCache();
-		                    saveBitmap(myBitmap);
-	                    	
-	                    	mMusicPlayerView.getThread().Prtscr_flag = false;
-	                    		// onBackPressed();
-        				}
-	                    
-	                   // if (mMusicPlayerView.getThread().MusicPlayerFlag == true) { camera.stopPreview(); previewing = false;}
-	                   // if (mMusicPlayerView.getThread().DnaConsoleFlag == true) {camera.stopPreview(); previewing = false;}
-	                   // if (mMusicPlayerView.getThread().MusicPlayerFlag == false) { previewing = true;}
-	                   // if (mMusicPlayerView.getThread().DnaConsoleFlag == false) { previewing = true;}
-	                    
+	                    	                    
 	                    	// -- display velocity based on accel_alpha [0..2.5]
 	                    float vel = mMusicPlayerView.getThread().accel_alpha;
 	                    if (vel>=2f) {tv_Vel.setText("4");}
@@ -420,24 +334,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    
 	                    tv_consoleBoard.setTextSize(15);tv_consoleBoard.setText(mMusicPlayerView.getThread().consoleBoard);
 	                    tv_consoleLine.setTextSize(30); tv_consoleLine.setText(mMusicPlayerView.getThread().consoleLine);
-	                   
-	                    
-
-	                    /* tv_Att.setText(String.valueOf(At)); // display meditation
-	                    	// -- change size and color of Att text view
-	                    if (At < 30) {
-	                    	//tv_Att.setTextColor(Color.YELLOW);
-	                    	tv_Att.setTextSize(20);
-	                    } else {
-	                        if (At <70) {
-	                        	//tv_Att.setTextColor(Color.GREEN);
-	                        	tv_Att.setTextSize(30);
-	                        } else {
-	                        	//tv_Att.setTextColor(Color.RED);
-	                        	tv_Att.setTextSize(40);
-	                        }                    
-	                    } */
- 	                    		                    
+	                    	                    		                    
 	                    // --saving data to file
 	                    /* String filename ="so_v2_<date_time>.csv";
 	                    Time now = new Time();
@@ -456,21 +353,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    Med = msg.arg1;
 	                    tv_Med.setText(String.valueOf(Med));
 	                    mMusicPlayerThread.setMeditation(Med);
-	                    
-	                    // -- change size and color of Med text view
-	                   /* if (Med < 30) {
-	                    	//tv_Med.setTextColor(Color.YELLOW);
-	                    	//tv_Med.setTextSize(20);
-	                    } else {
-	                        if (Med <70){
-	                        	//tv_Med.setTextColor(Color.GREEN);
-	                        	//tv_Med.setTextSize(30);
-	                        } else {
-	                        	//tv_Med.setTextColor(Color.RED);
-	                        	//tv_Med.setTextSize(40);
-	                        }                    
-	                    }*/
-	 
+	                    	 
 	                    tv_AmM.setText(String.valueOf(At-Med)); // display Att-Med
 	                    	// -- change size and color of Att-Med text view                   
 	                    if (Math.abs(At-Med) <= 15)	{tv_AmM.setTextSize(22); tv_AmM.setTextColor(Color.GRAY);}
@@ -517,187 +400,4 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	            }
 	        };
 	        
-	    // -- Handles messages from Camera 
-	        ShutterCallback myShutterCallback = new ShutterCallback(){
-
-	    		@Override
-	    		public void onShutter() {
-	    			// TODO Auto-generated method stub
-	    			
-	    		}
-	    	};
-	    		
-	    	PictureCallback myPictureCallback_RAW = new PictureCallback(){
-
-	    		@Override
-	    		public void onPictureTaken(byte[] arg0, Camera arg1) {
-	    			// TODO Auto-generated method stub
-	    			
-	    		}
-	    	}; 
-	    		
-	    	PictureCallback myPictureCallback_JPG = new PictureCallback(){
-
-	    	@Override
-	    	public void onPictureTaken(byte[] arg0, Camera arg1) {
-	    			// TODO Auto-generated method stub
-	    		//Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
-	    		
-	    		Log.d(getString(R.string.app_name), "ir_d onPictureTaken() --> bitmapPicture");
-	    		try {
-					camera.setPreviewDisplay(surfaceHolder);
-					camera.startPreview();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				//previewing = true;
-				
-				// --- saving picture
-				File pictureFileDir = getDir();
-	    	    if (!pictureFileDir.exists() && !pictureFileDir.mkdirs()) {
-	    	      //Log.d(MakePhotoActivity.DEBUG_TAG, "Can't create directory to save image.");
-	    	     // Toast.makeText(context, "Can't create directory to save image.", Toast.LENGTH_LONG).show();
-	    	      return;
-	    	    }
-	    	    
-	    	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-	    	    String date = dateFormat.format(new Date());
-	    	    String photoFile = "eeg_" + date + ".jpg";
-
-	    	    filename = pictureFileDir.getPath() + File.separator + photoFile;
-
-	    	    File pictureFile = new File(filename);
-	    	    try {
-		    	      FileOutputStream fos = new FileOutputStream(pictureFile);
-		    	      fos.write(arg0);
-		    	      fos.close();
-		    	     // Toast.makeText(context, "New Image saved:" + photoFile,  Toast.LENGTH_LONG).show();
-		    	    } catch (Exception error) {
-		    	     // Log.d(MakePhotoActivity.DEBUG_TAG, "File" + filename + "not saved: "  + error.getMessage());
-		    	      //Toast.makeText(context, "Image could not be saved.", Toast.LENGTH_LONG).show();
-		    	    }
-	    	     
-	    	   // releaseCamera();
-	    	}
-	    };
-
-	    	  
-	        private File getDir() {
-	    	    File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-	    	    return new File(sdDir, "eeg_picture");
-	        }
-	    	
-	    	
-	    	@Override
-	    	public void surfaceChanged(SurfaceHolder holder, int format, int width,	int height) {			
-	    		//initializeCamera();
-	            // -- If your preview can change or rotate, take care of those events here.
-	            // -- Make sure to stop the preview before resizing or reformatting it.
-	    	
-	            if (holder.getSurface() == null){
-	            	Log.d(getString(R.string.app_name), "ir_d surfaceChanged --> preview surface does not exist");
-	                return;
-	            }
-
-	            // -- stop preview before making changes
-	            try {
-	                camera.stopPreview();
-	                Log.d(getString(R.string.app_name), "ir_d surfaceChanged --> camera.stopPreview()  " + camera);
-	            } catch (Exception e){ // ignore: tried to stop a non-existent preview
-	            	Log.d(getString(R.string.app_name), "ir_d surfaceChanged --> Error camera.stopPreview()  " + camera);
-	            }
-
-	            // set preview size and make any resize, rotate or
-	            // reformatting changes here
-
-	            // -- start preview with new settings	            
-	    		if (camera != null) {
-	    			try { 
-	    				camera.setPreviewDisplay(holder);
-	    				// -- camera.setPreviewDisplay(surfaceHolder);
-	    				camera.startPreview();
-	                    Log.d(getString(R.string.app_name),"ir_d surfaceChanged --> camera.setPreviewDisplay()  " + camera);
-	                } catch (IOException e) 
-	                { Log.d(getString(R.string.app_name), "ir_d surfaceChanged --> Error setting camera preview:  " + camera); }
-	                	
-	    			camera.setDisplayOrientation(90);
-	            }
-	    		
-	    	}
-
-	    	@Override
-	    	public void surfaceCreated(SurfaceHolder holder) {
-	    		// -- The Surface has been created, now tell the camera where to draw the preview.
-	    		initializeCamera();
-
-	    		Log.d(getString(R.string.app_name), "ir_d surfaceCreated()");
-	    		
-	    	}
-
-	    	@Override
-	    	public void surfaceDestroyed(SurfaceHolder holder) {
-	    	    // Surface will be destroyed when we return, so stop the preview.
-	    	    if (camera != null) {// Call stopPreview() to stop updating the preview surface.
-	    	        camera.stopPreview();
-	    	    }
-	    	    releaseCamera();
-	    	    
-	    		Log.d(getString(R.string.app_name), "ir_d surfaceDestroyed()");
-	    	}
-
-	        private void initializeCamera()
-	        { 
-	            // -- do we have a camera?
-	            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-	              Toast.makeText(this, "No camera on this device", Toast.LENGTH_LONG).show();
-	            } else {
-	              //cameraId = findFrontFacingCamera();
-	              cameraId = 0;
-	              if (cameraId < 0) {
-	                Toast.makeText(this, "No front facing camera found.",Toast.LENGTH_LONG).show();
-	              }
-	            }
-	            
-	            // -- open camera
-	            try {
-	            	releaseCamera();
-	            	camera = Camera.open(cameraId);
-	            	Log.d(getString(R.string.app_name), "ir_d initializeCamera() --> Camera.open()  " + camera + "  " + cameraId);
-	            } catch (Exception e) {
-	                Log.d(getString(R.string.app_name), "ir_d initializeCamera() failed to open Camera");
-	                
-	            }
-	            
-	        }
-
-	        private void releaseCamera() {
-	            if (camera != null) {
-	                camera.stopPreview();
-	                camera.release();
-	                camera = null;
-	                
-	                Log.d(getString(R.string.app_name), "ir_d releaseCamera() --> Camera.release() true  " + camera );
-	            }
-	            
-	            Log.d(getString(R.string.app_name), "ir_d releaseCamera() --> Camera.release() false  " + camera );
-	            
-	        }
-
-	        private int findFrontFacingCamera() {
-	            int cameraId = -1;
-	            // Search for the front facing camera
-	            int numberOfCameras = Camera.getNumberOfCameras();
-	            for (int i = 0; i < numberOfCameras; i++) {
-	              CameraInfo info = new CameraInfo();
-	              Camera.getCameraInfo(i, info);
-	              if (info.facing == CameraInfo.CAMERA_FACING_FRONT) {
-	            	  Log.d(getString(R.string.app_name), "ir_d findFrontFacingCamera() CAMERA_FACING_FRONT found" );
-	                cameraId = i;
-	                break;
-	              }
-	            }
-	            return cameraId;
-	          }
 }
