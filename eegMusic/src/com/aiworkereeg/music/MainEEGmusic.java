@@ -1,6 +1,5 @@
 package com.aiworkereeg.music;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,7 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.Locale;
 
 import android.app.Activity;
@@ -22,6 +21,7 @@ import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -66,6 +66,7 @@ import com.neurosky.thinkgear.TGRawMulti;
 
 
 public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
+// public class MainEEGmusic extends Activity {
 	
 	private BluetoothAdapter bluetoothAdapter;
 	TGDevice tgDevice;
@@ -93,16 +94,29 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     private int cameraId = 0;
     public String filename = "empty";
     
+    String KEY_play_flag; 
+    boolean play_flag_local = false;
+    String play_flag_l = "false";
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // -- tell system to use the layout defined in our XML file
-        setContentView(R.layout.musicplayer_layout);
+        setContentView(R.layout.activity_main_eegmusic);
                        
-        mMusicPlayerView = (MusicPlayerView) findViewById(R.id.lunar);
+        // Get the between instance stored values
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        if (preferences.getString(KEY_play_flag, null) != null){
+        	play_flag_l =  preferences.getString(KEY_play_flag, null);
+        }
+        
+                
+        
+        mMusicPlayerView = (MusicPlayerView) findViewById(R.id.mp);
         mMusicPlayerThread = mMusicPlayerView.getThread();
 
         // -- give the MusicPlayerView a handle to the TextView used for messages
@@ -113,12 +127,19 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         tv_Med = (TextView) findViewById(R.id.Med_text);       
         tv_Vel = (TextView) findViewById(R.id.Vel_text);
         tv_AmM = (TextView) findViewById(R.id.AmM_text);
+        //tv_Vel.setText(play_flag_l);
         
         tv_TimeToSel = (TextView) findViewById(R.id.TimeToSel);
         tv_consoleBoard = (TextView) findViewById(R.id.console_info);
         tv_consoleLine = (TextView) findViewById(R.id.console_line);
         
-        if (savedInstanceState == null) {
+        // -- for testing
+        //tv_Vel.setText(String.valueOf(mMusicPlayerView.getThread().play_flag)) ; 
+        //tv_Vel.setText(String.valueOf(play_flag_local)) ;
+        
+       /* if (savedInstanceState == null && String.valueOf(savedInstanceState.getBoolean(KEY_play_flag)) != null) {
+        	play_flag_local = savedInstanceState.getBoolean(KEY_play_flag);
+        	
             // we were just launched: set up a new game
            // mGlassThread.setState(GlassThread.STATE_READY);
           //  mMusicPlayerThread.setState(MusicPlayerThread.STATE_READY);
@@ -127,7 +148,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
             // we are being restored: resume a previous game
            // mMusicPlayerThread.restoreState(savedInstanceState);        	
             //Log.w(this.getClass().getName(), "SIS is nonnull");
-        }
+        }*/
 				
         /* Checking BT and connecting to the TG device */
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -160,9 +181,17 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     @Override
     public void onPause() {        
         super.onPause();
-        
+                
     	mMusicPlayerView.getThread().pause(); // pause game when Activity pauses
         mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder, ir   
+        
+        // Store values between instances here  
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);  
+        SharedPreferences.Editor editor = preferences.edit();  // Put the values from the UI 
+        //editor.putBoolean(KEY_play_flag, true); // value to store  
+        editor.putString(KEY_play_flag, String.valueOf(mMusicPlayerView.getThread().play_flag));
+        // Commit to storage 
+        editor.commit(); 
                
         Log.d(getString(R.string.app_name), "ir_d onPause()");
     }
@@ -203,9 +232,32 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	protected void onSaveInstanceState(Bundle outState) {
 	        // just have the View's thread save its state into our Bundle
 	        super.onSaveInstanceState(outState);
-	       // mGlassThread.saveState(outState);
+	        //play_flag_local = mMusicPlayerView.getThread().play_flag;
+	        //outState.putBoolean(KEY_play_flag, Boolean.valueOf(mMusicPlayerView.getThread().play_flag));
+	       // outState.putBoolean(KEY_play_flag, true);
+	        //mMusicPlayerView.getThread().saveState(outState);
 	}
 	   
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+	   super.onRestoreInstanceState(savedInstanceState);
+	   	   
+       //if (savedInstanceState == null && String.valueOf(savedInstanceState.getBoolean(KEY_play_flag)) != null) {
+    	if (savedInstanceState == null) {
+          //	play_flag_local = savedInstanceState.getBoolean(KEY_play_flag);
+       	
+           // we were just launched: set up a new game
+          // mGlassThread.setState(GlassThread.STATE_READY);
+         //  mMusicPlayerThread.setState(MusicPlayerThread.STATE_READY);
+           //Log.w(this.getClass().getName(), "SIS is null");
+       } else {
+           // we are being restored: resume a previous game
+          // mMusicPlayerThread.restoreState(savedInstanceState);        	
+           //Log.w(this.getClass().getName(), "SIS is nonnull");
+       }
+    	//tv_Vel.setText(String.valueOf(true)) ;
+	}
+	
 		// -- tgDevice State
 	public void doStuff() {
 	   //Toast.makeText(this, "connecting...", Toast.LENGTH_SHORT).show();
@@ -246,7 +298,8 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                        tgDevice.start();
 	                        tv_info.setText("Connected");
 	                        // -- start thread with eeg_launcher
-	                        mMusicPlayerThread.doStart(); 	                       	        	    		
+	                        mMusicPlayerThread.doStart(); 
+	                        mMusicPlayerView.getThread().play_flag = Boolean.valueOf(play_flag_l);
 	                        break;
 	                    case TGDevice.STATE_NOT_FOUND:
 	                    	tv_info.setText("neurosky mindwave mobile was not found");
@@ -312,6 +365,9 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    if (vel>=1f && vel<1.5f) {tv_Vel.setText("2");}
 	                    if (vel>=0.5f && vel<1f) {tv_Vel.setText("1");}
 	                    if (vel<0.5f) {tv_Vel.setText("0");}  
+	                    
+	                    // -- for testing
+	                    //tv_Vel.setText(String.valueOf(mMusicPlayerView.getThread().play_flag)) ;
 	                    
 	                    	// -- display time to action selection
 	                    tv_TimeToSel.setTextColor(Color.WHITE);
@@ -399,5 +455,23 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 
 	            }
 	        };
+
+	@Override
+	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void surfaceCreated(SurfaceHolder arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void surfaceDestroyed(SurfaceHolder arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 	        
 }

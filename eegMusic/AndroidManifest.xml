@@ -5,23 +5,66 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="15"
         android:targetSdkVersion="21" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+  	<uses-permission android:name="android.permission.INTERNET" />
+  	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.glass.permission.DEVELOPMENT" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:label="@string/app_name" 
+     
+        android:background="@android:color/transparent"  >
         <activity
-            android:name=".MainEEGmusic"
-            android:label="@string/app_name" >
+            android:name="com.aiworkereeg.music.MainEEGmusic"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="portrait" 
+            android:background="@android:color/transparent"
+            android:label="@string/app_name"  >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        
+        <service android:exported="false" android:name=".MusicService">
+            <intent-filter>
+                <action android:name="com.aiworkereeg.music.action.TOGGLE_PLAYBACK" />
+                <action android:name="com.aiworkereeg.music.action.PLAY" />
+                <action android:name="com.aiworkereeg.music.action.STOP" />
+                <action android:name="com.aiworkereeg.music.action.PAUSE" />
+                <action android:name="com.aiworkereeg.music.action.SKIP" />
+                <action android:name="com.aiworkereeg.music.action.REWIND" />                
+            </intent-filter>
+            
+            <intent-filter>
+                <action android:name="com.aiworkereeg.music.action.StartTG" />
+            </intent-filter>
+            
+            <intent-filter>
+                <action android:name="com.aiworkereeg.music.action.URL" />
+                <data android:scheme="http" />
+            </intent-filter>
+        </service>
+        
+        <receiver android:name=".MusicIntentReceiver">
+            <intent-filter>
+                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+        
+        
     </application>
 
 </manifest>

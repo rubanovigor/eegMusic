@@ -64,10 +64,10 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
                 OnErrorListener, MusicFocusable,
                 PrepareMusicRetrieverTask.MusicRetrieverPreparedListener {
 	//BT and TG
-	//private BluetoothAdapter bluetoothAdapter;
-	//TGDevice tgDevice;
-	
+	private BluetoothAdapter bluetoothAdapter;
+	TGDevice tgDevice;
 	//private static final boolean RAW_ENABLED = false; // false by default
+	
 	private static final boolean RAW_ENABLED = false; // true to get access to 8 brain waves
     private int At = 50; //public or private ??
     private int Med = 50;
@@ -83,6 +83,7 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
     public boolean AttInUse = false;
     public boolean AMInUse = false;
     
+	
     // The tag we put on debug messages
     //final static String TAG = "RandomMusicPlayer";
     final static String TAG = "Voice of Spirit";
@@ -92,12 +93,13 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
     // service can handle are the <action> tags in the <intent-filters> tag for our service in
     // AndroidManifest.xml.
     public static final String ACTION_TOGGLE_PLAYBACK = "com.example.android.musicplayer.action.TOGGLE_PLAYBACK";
-    public static final String ACTION_PLAY = "com.aiworkereeg.launcher.action.PLAY";
-    public static final String ACTION_PAUSE = "com.aiworkereeg.launcher.action.PAUSE";
-    public static final String ACTION_STOP = "com.aiworkereeg.launcher.action.STOP";
-    public static final String ACTION_SKIP = "com.aiworkereeg.launcher.action.SKIP";
-    public static final String ACTION_REWIND = "com.aiworkereeg.launcher.action.REWIND";
-    public static final String ACTION_URL = "com.aiworkereeg.launcher.action.URL";
+    public static final String ACTION_PLAY = "com.aiworkereeg.music.action.PLAY";
+    public static final String ACTION_PAUSE = "com.aiworkereeg.music.action.PAUSE";
+    public static final String ACTION_STOP = "com.aiworkereeg.music.action.STOP";
+    public static final String ACTION_SKIP = "com.aiworkereeg.music.action.SKIP";
+    public static final String ACTION_REWIND = "com.aiworkereeg.music.action.REWIND";
+    public static final String ACTION_URL = "com.aiworkereeg.music.action.URL";
+    public static final String ACTION_StartTG = "com.aiworkereeg.music.action.StartTG";
     
    /* public static final String Med40 = "com.aiworkereeg.eegaudiofeedback.action.MED40";
     public static final String Med60 = "com.aiworkereeg.eegaudiofeedback.action.MED60";
@@ -269,6 +271,8 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
         else if (action.equals(ACTION_STOP)) processStopRequest();
         else if (action.equals(ACTION_REWIND)) processRewindRequest();
         else if (action.equals(ACTION_URL)) processAddRequest(intent);
+        
+       // else if (action.equals(ACTION_StartTG)) ConnectBT();
         
       /*  else if (action.equals(Med40)) { MedInUse=true; AttInUse=false; AMInUse=false; Med_thr = 40; processPlayRequest();}
         else if (action.equals(Med60)) { MedInUse=true; AttInUse=false; AMInUse=false; Med_thr = 60; processPlayRequest();}
@@ -659,7 +663,7 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
     }
     
     /* =========================================== */
-   /* public void ConnectBT() {
+  /*  public void ConnectBT() {
         //Checking BT and connecting to the TG device 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {	// Alert user that Bluetooth is not available
@@ -678,10 +682,10 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
             tgDevice.connect(RAW_ENABLED);
         }
     }
-    */
     
-    /* Handles messages from TGDevice */
-   /* private final Handler handler = new Handler() {
+    
+    // --Handles messages from TGDevice 
+    private final Handler handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {               
                 switch (msg.what) {

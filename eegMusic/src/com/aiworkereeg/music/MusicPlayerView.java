@@ -39,8 +39,8 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
   	boolean next_flag = false; 	boolean Prtscr_flag = false; boolean Picture_flag = false;
 
   	// -- eeg launcher by default
-  	boolean EegLauncherFlag = true;	boolean MusicPlayerFlag = false;
-  	boolean DnaConsoleFlag = false; boolean CameraFlag = false;
+  	//boolean EegLauncherFlag = true;	boolean MusicPlayerFlag = false;
+  	//boolean DnaConsoleFlag = false; boolean CameraFlag = false;
   	// -- camera by default
   	//boolean EegLauncherFlag = false;	boolean MusicPlayerFlag = false;
   	//boolean DnaConsoleFlag = false; boolean CameraFlag = true;
@@ -48,8 +48,8 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
   	//boolean EegLauncherFlag = false;	boolean MusicPlayerFlag = false;
   	//boolean DnaConsoleFlag = true; boolean CameraFlag = false;
   	// -- music by default
-  	//boolean EegLauncherFlag = false;	boolean MusicPlayerFlag = true;
-  	//boolean DnaConsoleFlag = false; boolean CameraFlag = false;
+  	boolean EegLauncherFlag = false;	boolean MusicPlayerFlag = true;
+  	boolean DnaConsoleFlag = false; boolean CameraFlag = false;
   	
   	boolean action_cancel_flag = false;
       int At = 50; int Med = 50;   int ApM = 100;    int AmM = 0; 
@@ -122,7 +122,7 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
 
       /** UI constants (i.e. the speed & fuel bars) */
      // private static final String KEY_X = "pX";      private static final String KEY_Y = "pY";
-      //private static final String KEY_EEG = "EegLauncherFlag"; 
+      private static final String KEY_play_flag = "play_flag"; 
       //private static final String KEY_DNA = "DnaConsoleFlag";
       //private static final String KEY_MP = "MusicPlayerFlag";
 
@@ -225,9 +225,10 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
               setState(STATE_PAUSE);
              // mRotating = 0;
             /*  pX = savedState.getDouble(KEY_X);
-              pY = savedState.getDouble(KEY_Y);
-              EegLauncherFlag = savedState.getBoolean(KEY_EEG);
-              DnaConsoleFlag = savedState.getBoolean(KEY_DNA);
+              pY = savedState.getDouble(KEY_Y);*/
+              
+              play_flag = savedState.getBoolean(KEY_play_flag);
+            /*  DnaConsoleFlag = savedState.getBoolean(KEY_DNA);
               MusicPlayerFlag = savedState.getBoolean(KEY_MP);*/
           }
       }
@@ -264,9 +265,11 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
           synchronized (mSurfaceHolder) {
               if (map != null) {
               /*    map.putDouble(KEY_X, Double.valueOf(pX));
-                  map.putDouble(KEY_Y, Double.valueOf(pY));
-                  map.putBoolean(KEY_EEG, Boolean.valueOf(EegLauncherFlag));
-                  map.putBoolean(KEY_DNA, Boolean.valueOf(DnaConsoleFlag));
+                  map.putDouble(KEY_Y, Double.valueOf(pY)); */
+            	  
+                  //map.putBoolean(KEY_play_flag, Boolean.valueOf(play_flag));
+                  map.putBoolean(KEY_play_flag, Boolean.valueOf(true));
+              /*    map.putBoolean(KEY_DNA, Boolean.valueOf(DnaConsoleFlag));
                   map.putBoolean(KEY_MP , Boolean.valueOf(MusicPlayerFlag));*/
               }
           }
