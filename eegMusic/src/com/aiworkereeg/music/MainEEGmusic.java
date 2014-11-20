@@ -81,7 +81,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     	/** A handle to the View in which the game is running. */
     private MusicPlayerView mMusicPlayerView;
     
-    final int ActivityTwoRequestCode = 0;
+   /* final int ActivityTwoRequestCode = 0;
     Bitmap myBitmap;
     
     // -- camera 
@@ -91,7 +91,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     boolean previewing = false;
     LayoutInflater controlInflater = null;
     private boolean flag_camera = true; 
-    private int cameraId = 0;
+    private int cameraId = 0; */
     public String filename = "empty";
     
     String KEY_play_flag; 
@@ -108,26 +108,25 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         // -- tell system to use the layout defined in our XML file
         setContentView(R.layout.activity_main_eegmusic);
                        
-        // Get the between instance stored values
+        // -- get the between instance stored values (status of music player)
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         if (preferences.getString(KEY_play_flag, null) != null){
         	play_flag_l =  preferences.getString(KEY_play_flag, null);
         }
         
-                
-        
+        // -- link thread to view     
         mMusicPlayerView = (MusicPlayerView) findViewById(R.id.mp);
         mMusicPlayerThread = mMusicPlayerView.getThread();
 
         // -- give the MusicPlayerView a handle to the TextView used for messages
         mMusicPlayerView.setTextView((TextView) findViewById(R.id.text));
 		tv_info = (TextView) findViewById(R.id.text);
-        // -- give the GlassView a handle to the TextView used for messages
+        
+		// -- give the GlassView a handle to the TextView used for messages
         tv_Att = (TextView) findViewById(R.id.Att_text);
         tv_Med = (TextView) findViewById(R.id.Med_text);       
         tv_Vel = (TextView) findViewById(R.id.Vel_text);
         tv_AmM = (TextView) findViewById(R.id.AmM_text);
-        //tv_Vel.setText(play_flag_l);
         
         tv_TimeToSel = (TextView) findViewById(R.id.TimeToSel);
         tv_consoleBoard = (TextView) findViewById(R.id.console_info);
@@ -172,9 +171,12 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	@Override
 	public void onResume() {
 		super.onResume();
-	      
+	                
 		//mMusicPlayerView.getThread().unpause(); // pause game when Activity pauses
-        //mMusicPlayerView.getThread().setRunning(true); //correctly destroy SurfaceHolder, ir   
+        //mMusicPlayerView.getThread().setRunning(true);    
+          
+		//tgDevice = new TGDevice(bluetoothAdapter, handler);
+        //doStuff();
           
 	    Log.d(getString(R.string.app_name), "ir_d onResume()");
 	}
@@ -183,16 +185,25 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         super.onPause();
                 
     	mMusicPlayerView.getThread().pause(); // pause game when Activity pauses
-        mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder, ir   
+        mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder  
         
-        // Store values between instances here  
+        // -- store values between instances here  
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);  
         SharedPreferences.Editor editor = preferences.edit();  // Put the values from the UI 
-        //editor.putBoolean(KEY_play_flag, true); // value to store  
+        	//editor.putBoolean(KEY_play_flag, true); // value to store  
         editor.putString(KEY_play_flag, String.valueOf(mMusicPlayerView.getThread().play_flag));
-        // Commit to storage 
+        	// -- commit to storage 
         editor.commit(); 
-               
+           
+        try {
+            if (tgDevice != null) {
+                tgDevice.close();
+            }
+
+        } catch (NullPointerException e) { }
+        
+        finish();
+        
         Log.d(getString(R.string.app_name), "ir_d onPause()");
     }
     @Override
@@ -210,11 +221,11 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     @Override
 	public void onDestroy() {  
     	super.onDestroy();  
-       /* try {
+        try {
             if (tgDevice != null) {
                 tgDevice.close();
             }
-        } catch (NullPointerException e) { } */
+        } catch (NullPointerException e) { } 
 
        // mMusicPlayerView.getThread().pause(); // pause game when Activity pauses
        // mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder, ir   
@@ -270,10 +281,15 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 	        switch (keyCode) {
 	            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+	            case KeyEvent.KEYCODE_HOME:
+	            {
+	 	           android.os.Process.killProcess(android.os.Process.myPid());
+	 	        }
 	            case KeyEvent.KEYCODE_HEADSETHOOK:
 	                startService(new Intent(MusicService.ACTION_TOGGLE_PLAYBACK));
 	                return true;
 	        }
+	        
 	        return super.onKeyDown(keyCode, event);
 	}
 	   	    
@@ -309,6 +325,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                        break;
 	                    case TGDevice.STATE_DISCONNECTED:
 	                    	tv_info.setText("Disconnected");
+	                    	//doStuff();
 	                    }
 
 	                    break;
