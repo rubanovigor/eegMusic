@@ -63,14 +63,8 @@ import android.os.Handler;
 public class MusicService extends Service implements OnCompletionListener, OnPreparedListener,
                 OnErrorListener, MusicFocusable,
                 PrepareMusicRetrieverTask.MusicRetrieverPreparedListener {
-	//BT and TG
-	private BluetoothAdapter bluetoothAdapter;
-	TGDevice tgDevice;
-	//private static final boolean RAW_ENABLED = false; // false by default
 	
-	private static final boolean RAW_ENABLED = false; // true to get access to 8 brain waves
-    private int At = 50; //public or private ??
-    private int Med = 50;
+    private int At = 50;   private int Med = 50;
     private int Theta;
     private int hAlpha;
     private int lAlpha;
@@ -86,7 +80,7 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
 	
     // The tag we put on debug messages
     //final static String TAG = "RandomMusicPlayer";
-    final static String TAG = "Voice of Spirit";
+    final static String TAG = "EEG Music";
 
     // These are the Intent actions that we are prepared to handle. Notice that the fact these
     // constants exist in our class is a mere convenience: what really defines the actions our
@@ -236,22 +230,8 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
 
         mDummyAlbumArt = BitmapFactory.decodeResource(getResources(), R.drawable.dummy_album_art);
 
-        mMediaButtonReceiverComponent = new ComponentName(this, MusicIntentReceiver.class);
-        
-        /* =========================================== */
-
-        /* Checking BT and connecting to the TG device */
-      /*  bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter == null) {	// Alert user that Bluetooth is not available
-            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_SHORT).show();
-            //finish();
-            return;
-        } else { // create the TGDevice 
-            tgDevice = new TGDevice(bluetoothAdapter, handler);
-            doStuff();
-        }*/
-        /* =========================================== */
-        
+        mMediaButtonReceiverComponent = new ComponentName(this, MusicIntentReceiver.class); 
+             
     }
 
     /**
@@ -577,7 +557,7 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0,
                 new Intent(getApplicationContext(), MainEEGmusic.class),
                 PendingIntent.FLAG_UPDATE_CURRENT);
-        mNotification.setLatestEventInfo(getApplicationContext(), "Voice of Spirit", BTstatus + "  " + text, pi);
+        mNotification.setLatestEventInfo(getApplicationContext(), "EEG Music", BTstatus + "  " + text, pi);
         mNotificationManager.notify(NOTIFICATION_ID, mNotification);
     }
 
@@ -596,7 +576,7 @@ public class MusicService extends Service implements OnCompletionListener, OnPre
         mNotification.icon = R.drawable.aiworker_logo_small;
         //mNotification.icon = R.drawable.ic_launcher;
         mNotification.flags |= Notification.FLAG_ONGOING_EVENT;
-        mNotification.setLatestEventInfo(getApplicationContext(), "Voice of Spirit", " " + text, pi);
+        mNotification.setLatestEventInfo(getApplicationContext(), "EEG Music", " " + text, pi);
         startForeground(NOTIFICATION_ID, mNotification);
     }
 

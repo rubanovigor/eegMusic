@@ -23,7 +23,7 @@
         android:background="@android:color/transparent"  >
         <activity
             android:name="com.aiworkereeg.music.MainEEGmusic"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           
             android:screenOrientation="portrait" 
             android:background="@android:color/transparent"
             android:label="@string/app_name"  >
@@ -33,8 +33,12 @@
             </intent-filter>
         </activity>
         
+        <service
+            android:name=".EEGService"
+            android:exported="false"/>
         
         <service android:exported="false" android:name=".MusicService">
+            android:icon="@drawable/ic_launcher"
             <intent-filter>
                 <action android:name="com.aiworkereeg.music.action.TOGGLE_PLAYBACK" />
                 <action android:name="com.aiworkereeg.music.action.PLAY" />
@@ -43,16 +47,13 @@
                 <action android:name="com.aiworkereeg.music.action.SKIP" />
                 <action android:name="com.aiworkereeg.music.action.REWIND" />                
             </intent-filter>
-            
-            <intent-filter>
-                <action android:name="com.aiworkereeg.music.action.StartTG" />
-            </intent-filter>
-            
+                        
             <intent-filter>
                 <action android:name="com.aiworkereeg.music.action.URL" />
                 <data android:scheme="http" />
             </intent-filter>
         </service>
+        
         
         <receiver android:name=".MusicIntentReceiver">
             <intent-filter>

@@ -20,7 +20,10 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -37,6 +40,7 @@ import android.hardware.Camera.ShutterCallback;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -65,8 +69,8 @@ import com.neurosky.thinkgear.TGRawMulti;
 
 
 
-public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
-// public class MainEEGmusic extends Activity {
+//public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
+ public class MainEEGmusic extends Activity {
 	
 	private BluetoothAdapter bluetoothAdapter;
 	TGDevice tgDevice;
@@ -98,13 +102,16 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     boolean play_flag_local = false;
     String play_flag_l = "false";
     
+    // -- an instance of the status broadcast receiver
+    DownloadStateReceiver mDownloadStateReceiver;
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+      //  getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+        //        WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // -- tell system to use the layout defined in our XML file
         setContentView(R.layout.activity_main_eegmusic);
                        
@@ -132,25 +139,37 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         tv_consoleBoard = (TextView) findViewById(R.id.console_info);
         tv_consoleLine = (TextView) findViewById(R.id.console_line);
         
-        // -- for testing
-        //tv_Vel.setText(String.valueOf(mMusicPlayerView.getThread().play_flag)) ; 
-        //tv_Vel.setText(String.valueOf(play_flag_local)) ;
+        // =========================================
+        // -- in dev
+        /* Creates an intent filter for DownloadStateReceiver that intercepts broadcast Intents */
         
-       /* if (savedInstanceState == null && String.valueOf(savedInstanceState.getBoolean(KEY_play_flag)) != null) {
-        	play_flag_local = savedInstanceState.getBoolean(KEY_play_flag);
-        	
-            // we were just launched: set up a new game
-           // mGlassThread.setState(GlassThread.STATE_READY);
-          //  mMusicPlayerThread.setState(MusicPlayerThread.STATE_READY);
-            //Log.w(this.getClass().getName(), "SIS is null");
-        } else {
-            // we are being restored: resume a previous game
-           // mMusicPlayerThread.restoreState(savedInstanceState);        	
-            //Log.w(this.getClass().getName(), "SIS is nonnull");
-        }*/
-				
+        // The filter's action is BROADCAST_ACTION
+        IntentFilter statusIntentFilter = new IntentFilter(Constants.BROADCAST_ACTION);
+        
+        tv_info.setText("on create");
+        // Sets the filter's category to DEFAULT
+        statusIntentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        
+        
+        // Instantiates a new DownloadStateReceiver
+        mDownloadStateReceiver = new DownloadStateReceiver();
+        
+        // Registers the DownloadStateReceiver and its intent filters
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mDownloadStateReceiver, statusIntentFilter);
+        
+        Intent intent = new Intent(this, EEGService.class);
+    	startService(intent);
+       // Toast.makeText(this, "on create", Toast.LENGTH_SHORT).show();
+		//registerReceiver(receiver, new IntentFilter(EEGService.NOTIFICATION));
+		//Log.d(getString(R.string.app_name), "ir_d onCreate()");
+        //StartEEGService();
+        
+       // =========================================
+        
+        
         /* Checking BT and connecting to the TG device */
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+      /*  bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {	// Alert user that Bluetooth is not available
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             finish();
@@ -158,8 +177,10 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         } else {
             tgDevice = new TGDevice(bluetoothAdapter, handler);
             //Toast.makeText(this, "Bluetooth is available ir", Toast.LENGTH_LONG).show();
-            doStuff();
-        }	
+           // doStuff();
+        }	*/
+        
+        
                            
 	}
 
@@ -178,6 +199,8 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 		//tgDevice = new TGDevice(bluetoothAdapter, handler);
         //doStuff();
           
+		//registerReceiver(receiver, new IntentFilter(EEGService.NOTIFICATION));
+		
 	    Log.d(getString(R.string.app_name), "ir_d onResume()");
 	}
     @Override
@@ -202,6 +225,8 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 
         } catch (NullPointerException e) { }
         
+        //unregisterReceiver(receiver);
+        
         finish();
         
         Log.d(getString(R.string.app_name), "ir_d onPause()");
@@ -209,27 +234,33 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     @Override
 	public void onStop() { 
 		super.onStop();
-        try {
+       /* try {
             if (tgDevice != null) {
                 tgDevice.close();
             }
 
-        } catch (NullPointerException e) { }
+        } catch (NullPointerException e) { }*/
         
         Log.d(getString(R.string.app_name), "ir_d onStop()");
 	}
     @Override
 	public void onDestroy() {  
     	super.onDestroy();  
-        try {
+        /*try {
             if (tgDevice != null) {
                 tgDevice.close();
             }
-        } catch (NullPointerException e) { } 
+        } catch (NullPointerException e) { } */
 
        // mMusicPlayerView.getThread().pause(); // pause game when Activity pauses
        // mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder, ir   
            
+        /*// If the DownloadStateReceiver still exists, unregister it and set it to null
+        if (mDownloadStateReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mDownloadStateReceiver);
+            mDownloadStateReceiver = null;
+        }*/
+        
 	    Log.d(getString(R.string.app_name), "ir_d onDestroy()");
 	}    
    
@@ -276,7 +307,21 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	       tgDevice.connect(RAW_ENABLED);
 	   }
 	}
-	    	    
+	    
+	// -- Start EEG service in background
+	public void StartEEGService() {
+		/*//startService(new Intent(EEGService.StartTG));
+		Intent intent = new Intent(this, EEGService.class);
+	    // add infos for the service which file to download and where to store
+	    intent.putExtra(EEGService.FILENAME, "index.html");
+	    intent.putExtra(EEGService.BTstatus_key, "start TG");
+	    startService(intent);
+	    //tv_info.setText("Service started");*/
+	    
+	    Log.d(getString(R.string.app_name), "ir_d StartEEGService()");
+	}
+		
+	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 	        switch (keyCode) {
@@ -293,7 +338,66 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	        return super.onKeyDown(keyCode, event);
 	}
 	   	    
-	    
+	 /**
+     * This class uses the BroadcastReceiver framework to detect and handle status messages from
+     * the service that downloads URLs.
+     */
+    private class DownloadStateReceiver extends BroadcastReceiver {
+    	
+        private DownloadStateReceiver() {
+            
+            // prevents instantiation by other packages.
+        }
+        /**
+         *
+         * This method is called by the system when a broadcast Intent is matched by this class'
+         * intent filters
+         *
+         * @param context An Android context
+         * @param intent The incoming broadcast Intent
+         */
+       
+        @Override
+        public void onReceive(Context context, Intent intent) {
+        	//tv_info.setText("on Receive");
+        	Log.d(getString(R.string.app_name), "State: STARTED");
+            /*
+             * Gets the status from the Intent's extended data, and chooses the appropriate action
+             */
+            switch (intent.getIntExtra(Constants.EXTENDED_DATA_STATUS,
+                    Constants.STATE_CONNECTED)) {
+                
+                // Logs "started" state
+                case Constants.STATE_ACTION_STARTED:
+                    if (Constants.LOGD) {
+                        
+                        Log.d(getString(R.string.app_name), "State: STARTED");
+                    }
+                    break;
+                // Logs "connecting to network" state
+                case Constants.STATE_CONNECTING:
+                	tv_info.setText("STATE_CONNECTING");
+                    if (Constants.LOGD) {
+                        
+                        Log.d(getString(R.string.app_name), "State: CONNECTING");
+                    }
+                    break;
+
+                // Starts displaying data when the RSS download is complete
+                case Constants.STATE_CONNECTED:
+                    // Logs the status
+                	tv_info.setText("STATE_CONNECTED");
+                    if (Constants.LOGD) {
+                        
+                        Log.d(getString(R.string.app_name), "STATE: CONNECTED");
+                    }
+
+                default:
+                    break;
+            }
+        }
+    }
+        
 	    
   // -- Handles messages from TGDevice 
 	private final Handler handler = new Handler() {
@@ -473,22 +577,6 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	            }
 	        };
 
-	@Override
-	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void surfaceCreated(SurfaceHolder arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void surfaceDestroyed(SurfaceHolder arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-	        
+	
+	
 }
