@@ -19,12 +19,12 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" 
-     
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
         android:background="@android:color/transparent"  >
         <activity
             android:name="com.aiworkereeg.music.MainEEGmusic"
            
-            android:screenOrientation="portrait" 
+            android:screenOrientation="landscape" 
             android:background="@android:color/transparent"
             android:label="@string/app_name"  >
             <intent-filter>
@@ -33,9 +33,7 @@
             </intent-filter>
         </activity>
         
-        <service
-            android:name=".EEGService"
-            android:exported="false"/>
+        <service android:exported="false" android:name=".EEGService" />
         
         <service android:exported="false" android:name=".MusicService">
             android:icon="@drawable/ic_launcher"

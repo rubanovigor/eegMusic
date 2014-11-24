@@ -60,6 +60,38 @@ public class BroadcastNotifier {
         mBroadcaster.sendBroadcast(localIntent);
 
     }
+    
+    public void broadcastIntentWithA(int A) {
+
+        Intent localIntent = new Intent();
+
+        // The Intent contains the custom broadcast action for this app
+        localIntent.setAction(Constants.BROADCAST_ACTION);
+
+        // Puts the status into the Intent
+        localIntent.putExtra(Constants.EXTENDED_DATA_A, A);
+        localIntent.addCategory(Intent.CATEGORY_DEFAULT);
+
+        // Broadcasts the Intent
+        mBroadcaster.sendBroadcast(localIntent);
+
+    }
+    
+    public void broadcastIntentWithM(int M) {
+
+        Intent localIntent = new Intent();
+
+        // The Intent contains the custom broadcast action for this app
+        localIntent.setAction(Constants.BROADCAST_ACTION);
+
+        // Puts the status into the Intent
+        localIntent.putExtra(Constants.EXTENDED_DATA_M, M);
+        localIntent.addCategory(Intent.CATEGORY_DEFAULT);
+
+        // Broadcasts the Intent
+        mBroadcaster.sendBroadcast(localIntent);
+
+    }
 
     /**
      * Uses LocalBroadcastManager to send an {@link String} containing a logcat message.

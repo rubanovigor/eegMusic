@@ -43,7 +43,9 @@ import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -69,8 +71,8 @@ import com.neurosky.thinkgear.TGRawMulti;
 
 
 
-//public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
- public class MainEEGmusic extends Activity {
+public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
+// public class MainEEGmusic extends Activity {
 	
 	private BluetoothAdapter bluetoothAdapter;
 	TGDevice tgDevice;
@@ -78,7 +80,7 @@ import com.neurosky.thinkgear.TGRawMulti;
 	
 	TextView tv_info;	TextView tv_TimeToSel; 
 	TextView tv_consoleBoard; TextView tv_consoleLine;
-	private int At = 50;     private int Med = 50;
+	private int At = 42;     private int Med = 42;
 	TextView tv_Med;    TextView tv_Att;    TextView tv_Vel;    TextView tv_AmM;    
     	/** A handle to the thread that's actually running the animation. */
     private MusicPlayerThread mMusicPlayerThread;   
@@ -141,29 +143,23 @@ import com.neurosky.thinkgear.TGRawMulti;
         
         // =========================================
         // -- in dev
-        /* Creates an intent filter for DownloadStateReceiver that intercepts broadcast Intents */
+        StartEEGService();
         
-        // The filter's action is BROADCAST_ACTION
-        IntentFilter statusIntentFilter = new IntentFilter(Constants.BROADCAST_ACTION);
+        Display display = getWindowManager().getDefaultDisplay();
+        DisplayMetrics outMetrics = new DisplayMetrics ();
+        display.getMetrics(outMetrics);
+
+        float density  = getResources().getDisplayMetrics().density;
+        float dpHeight = outMetrics.heightPixels / density;
+        float dpWidth  = outMetrics.widthPixels / density;
+               
+        mMusicPlayerThread.doStart(); 
+        mMusicPlayerView.getThread().play_flag = Boolean.valueOf(play_flag_l);
+        mMusicPlayerView.getThread().pX = dpWidth*1.5;
+        mMusicPlayerView.getThread().pY = dpHeight*1.5;
         
-        tv_info.setText("on create");
-        // Sets the filter's category to DEFAULT
-        statusIntentFilter.addCategory(Intent.CATEGORY_DEFAULT);
-        
-        
-        // Instantiates a new DownloadStateReceiver
-        mDownloadStateReceiver = new DownloadStateReceiver();
-        
-        // Registers the DownloadStateReceiver and its intent filters
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mDownloadStateReceiver, statusIntentFilter);
-        
-        Intent intent = new Intent(this, EEGService.class);
-    	startService(intent);
-       // Toast.makeText(this, "on create", Toast.LENGTH_SHORT).show();
-		//registerReceiver(receiver, new IntentFilter(EEGService.NOTIFICATION));
-		//Log.d(getString(R.string.app_name), "ir_d onCreate()");
-        //StartEEGService();
+        // tv_Vel.setText(String.valueOf(20));
+        //tv_info.setText("STATE_CONNECTING");
         
        // =========================================
         
@@ -201,6 +197,9 @@ import com.neurosky.thinkgear.TGRawMulti;
           
 		//registerReceiver(receiver, new IntentFilter(EEGService.NOTIFICATION));
 		
+    	
+       // mMusicPlayerView.getThread().setRunning(true); 
+                
 	    Log.d(getString(R.string.app_name), "ir_d onResume()");
 	}
     @Override
@@ -241,6 +240,7 @@ import com.neurosky.thinkgear.TGRawMulti;
 
         } catch (NullPointerException e) { }*/
         
+		mMusicPlayerThread.stop(null);
         Log.d(getString(R.string.app_name), "ir_d onStop()");
 	}
     @Override
@@ -310,14 +310,24 @@ import com.neurosky.thinkgear.TGRawMulti;
 	    
 	// -- Start EEG service in background
 	public void StartEEGService() {
-		/*//startService(new Intent(EEGService.StartTG));
-		Intent intent = new Intent(this, EEGService.class);
-	    // add infos for the service which file to download and where to store
-	    intent.putExtra(EEGService.FILENAME, "index.html");
-	    intent.putExtra(EEGService.BTstatus_key, "start TG");
-	    startService(intent);
-	    //tv_info.setText("Service started");*/
-	    
+        /* Creates an intent filter for DownloadStateReceiver that intercepts broadcast Intents */
+        
+        // The filter's action is BROADCAST_ACTION
+        IntentFilter statusIntentFilter = new IntentFilter(Constants.BROADCAST_ACTION);
+        
+        // -- sets the filter's category to DEFAULT
+        statusIntentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+                
+        // -- instantiates a new DownloadStateReceiver
+        mDownloadStateReceiver = new DownloadStateReceiver();
+        
+        // -- registers the DownloadStateReceiver and its intent filters
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mDownloadStateReceiver, statusIntentFilter);
+        
+        Intent intent = new Intent(this, EEGService.class);
+    	startService(intent);
+    		    
 	    Log.d(getString(R.string.app_name), "ir_d StartEEGService()");
 	}
 		
@@ -328,7 +338,7 @@ import com.neurosky.thinkgear.TGRawMulti;
 	            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 	            case KeyEvent.KEYCODE_HOME:
 	            {
-	 	           android.os.Process.killProcess(android.os.Process.myPid());
+	 	          // android.os.Process.killProcess(android.os.Process.myPid());
 	 	        }
 	            case KeyEvent.KEYCODE_HEADSETHOOK:
 	                startService(new Intent(MusicService.ACTION_TOGGLE_PLAYBACK));
@@ -365,20 +375,19 @@ import com.neurosky.thinkgear.TGRawMulti;
              * Gets the status from the Intent's extended data, and chooses the appropriate action
              */
             switch (intent.getIntExtra(Constants.EXTENDED_DATA_STATUS,
-                    Constants.STATE_CONNECTED)) {
+                    Constants.STATE_ACTION_STARTED)) {
                 
                 // Logs "started" state
                 case Constants.STATE_ACTION_STARTED:
-                    if (Constants.LOGD) {
-                        
+                    if (Constants.LOGD) {                        
                         Log.d(getString(R.string.app_name), "State: STARTED");
                     }
                     break;
                 // Logs "connecting to network" state
                 case Constants.STATE_CONNECTING:
-                	tv_info.setText("STATE_CONNECTING");
-                    if (Constants.LOGD) {
-                        
+                	//tv_info.setText("STATE_CONNECTING");
+                	tv_consoleLine.setText("CONNECTING");
+                    if (Constants.LOGD) {                        
                         Log.d(getString(R.string.app_name), "State: CONNECTING");
                     }
                     break;
@@ -386,15 +395,90 @@ import com.neurosky.thinkgear.TGRawMulti;
                 // Starts displaying data when the RSS download is complete
                 case Constants.STATE_CONNECTED:
                     // Logs the status
-                	tv_info.setText("STATE_CONNECTED");
-                    if (Constants.LOGD) {
-                        
+                	tv_consoleLine.setText("STATE_CONNECTED");
+                     
+                    if (Constants.LOGD) {                     
                         Log.d(getString(R.string.app_name), "STATE: CONNECTED");
                     }
 
                 default:
                     break;
             }
+            
+            // -- if the incoming Intent is a sending A/M
+            //if (intent.getAction().equals(Constants.EXTENDED_DATA_A)) {
+               // tv_Vel.setText(intent.getIntExtra(Constants.EXTENDED_DATA_A, At));
+            	At = intent.getIntExtra(Constants.EXTENDED_DATA_A, At);
+            	Med = intent.getIntExtra(Constants.EXTENDED_DATA_M, Med);
+            	
+            	mMusicPlayerThread.setAttention(At);
+            	mMusicPlayerThread.setMeditation(Med);
+            	//String capital = intent.getStringExtra(Constants.EXTRA_CAPITAL);
+                //mTvCapital.setText("Capital : " + capital);
+                
+            	// --display Att/Med and they difference
+            	tv_Att.setText(String.valueOf(At));
+            	tv_Med.setText(String.valueOf(Med));
+            	tv_AmM.setText(String.valueOf(At-Med)); // display Att-Med
+            	// -- change size and color of Att-Med text view                   
+	            if (Math.abs(At-Med) <= 15)	{tv_AmM.setTextSize(22); tv_AmM.setTextColor(Color.GRAY);}
+	            	else if (Math.abs(At-Med) <= 30) {tv_AmM.setTextSize(22); tv_AmM.setTextColor(Color.GRAY); }
+	            
+	            if (At-Med < -45 || At-Med > 45) {tv_AmM.setTextSize(25); tv_AmM.setTextColor(Color.GREEN);}
+	            	else if (At-Med < -30 || At-Med > 30) {tv_AmM.setTextSize(25); tv_AmM.setTextColor(Color.GREEN); }
+	           
+	            
+		      /*  // -- do appropriate action for music player
+	            	// --play/stop/playnext
+	            if (mMusicPlayerView.getThread().play_flag == true)
+	        		{ 
+	            	 startService(new Intent(MusicService.ACTION_PLAY)); 
+	            	}
+	            if (mMusicPlayerView.getThread().stop_flag == true)
+	    			{ 
+	            	 startService(new Intent(MusicService.ACTION_STOP));
+	    			}            
+	            if (mMusicPlayerView.getThread().next_flag == true)
+	    			{ 
+	                 startService(new Intent(MusicService.ACTION_STOP));
+	            	 startService(new Intent(MusicService.ACTION_SKIP));
+	    			 mMusicPlayerView.getThread().next_flag = false;
+	    			}
+	            
+	        	// -- display velocity based on accel_alpha [0..2.5]
+                float vel = mMusicPlayerView.getThread().accel_alpha;
+                if (vel>=2f) {tv_Vel.setText("4");}
+                if (vel>=1.5f && vel<2f) {tv_Vel.setText("3");}
+                if (vel>=1f && vel<1.5f) {tv_Vel.setText("2");}
+                if (vel>=0.5f && vel<1f) {tv_Vel.setText("1");}
+                if (vel<0.5f) {tv_Vel.setText("0");}  
+	            
+
+            	// -- display time to action selection
+	            tv_TimeToSel.setTextColor(Color.WHITE);
+	            float tts = mMusicPlayerView.getThread().TimeToSelect;
+	            tts = tts*10f;
+	            tts = Math.round(tts);
+	            tts = tts/10f;
+	            //if (tts < 3f && vel<=0 && mMusicPlayerView.getThread().flag_Cursor)
+	            //if (mMusicPlayerView.getThread().action_cancel_flag){tv_TimeToSel.setText("cancel");}
+	            if (tts < 3f &&  mMusicPlayerView.getThread().flag_Cursor) {
+	            	tv_TimeToSel.setTextSize(20); tv_TimeToSel.setText(String.valueOf(Math.round(tts)) ); 
+	            	mMusicPlayerView.getThread().msgBoard = " ";}
+	            else {
+	            	tv_TimeToSel.setTextSize(20); tv_TimeToSel.setText(mMusicPlayerView.getThread().msgBoard);
+	            	}
+	            if (mMusicPlayerView.getThread().action_cancel_flag){
+	            	tv_TimeToSel.setTextSize(20);tv_TimeToSel.setText("cancel");
+	            	mMusicPlayerView.getThread().msgBoard = "";
+	            	}
+	            */
+	            // -- setup Board/Console text view
+	            tv_consoleBoard.setTextSize(15);tv_consoleBoard.setText(mMusicPlayerView.getThread().consoleBoard);
+	            tv_consoleLine.setTextSize(30); tv_consoleLine.setText(mMusicPlayerView.getThread().consoleLine);
+            
+            //}
+            
         }
     }
         
@@ -411,24 +495,24 @@ import com.neurosky.thinkgear.TGRawMulti;
 	                        break;
 	                    case TGDevice.STATE_CONNECTING:
 	                    	//mGlassThread.setTGStatus("Connecting...");
-	                    	tv_info.setText("Connecting...");
+	                    	//tv_info.setText("Connecting...");
 	                    	//releaseCamera();
 	                        break;
 	                    case TGDevice.STATE_CONNECTED:
 	                        tgDevice.start();
-	                        tv_info.setText("Connected");
+	                        //tv_info.setText("Connected");
 	                        // -- start thread with eeg_launcher
 	                        mMusicPlayerThread.doStart(); 
 	                        mMusicPlayerView.getThread().play_flag = Boolean.valueOf(play_flag_l);
 	                        break;
 	                    case TGDevice.STATE_NOT_FOUND:
-	                    	tv_info.setText("neurosky mindwave mobile was not found");
+	                    	//tv_info.setText("neurosky mindwave mobile was not found");
 	                        break;
 	                    case TGDevice.STATE_NOT_PAIRED:
-	                    	tv_info.setText("neurosky mindwave mobile not paired !!!!!");
+	                    	//tv_info.setText("neurosky mindwave mobile not paired !!!!!");
 	                        break;
 	                    case TGDevice.STATE_DISCONNECTED:
-	                    	tv_info.setText("Disconnected");
+	                    	//tv_info.setText("Disconnected");
 	                    	//doStuff();
 	                    }
 
@@ -576,6 +660,24 @@ import com.neurosky.thinkgear.TGRawMulti;
 
 	            }
 	        };
+
+@Override
+public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void surfaceCreated(SurfaceHolder arg0) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void surfaceDestroyed(SurfaceHolder arg0) {
+	// TODO Auto-generated method stub
+	
+}
 
 	
 	

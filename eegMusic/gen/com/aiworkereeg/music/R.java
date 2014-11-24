@@ -32,6 +32,7 @@ public final class R {
         public static final int icon_play_white=0x7f020007;
         public static final int icon_selected_icon=0x7f020008;
         public static final int icon_stop_white=0x7f020009;
+        public static final int test=0x7f02000a;
     }
     public static final class id {
         public static final int AmM_lable=0x7f06000d;

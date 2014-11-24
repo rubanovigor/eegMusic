@@ -116,7 +116,6 @@ public class EEGService extends IntentService{
 		                        tgDevice.start();
 		                        //Toast.makeText(this, "connected", Toast.LENGTH_SHORT).show();
 		                        BTstatus = "connected";
-		                        //mBroadcaster.broadcastIntentWithState(Constants.STATE_ACTION_COMPLETE);
 		                        mBroadcaster.broadcastIntentWithState(Constants.STATE_CONNECTED);
 		                        break;
 		                    case TGDevice.STATE_NOT_FOUND:
@@ -151,7 +150,7 @@ public class EEGService extends IntentService{
 		                	
 		                		 	               
 		                    At = msg.arg1;       
-		                    //mBroadcaster.broadcastIntentWithState(At);  
+		                    mBroadcaster.broadcastIntentWithA(At);  
 		                    //setUpAsForeground("Att: " + String.valueOf(At) + "||" + " Med: " + String.valueOf(Med) );
 	                		
 		                    //tv_Att.setText(String.valueOf(At));
@@ -172,6 +171,7 @@ public class EEGService extends IntentService{
 		                	//APIClient.collectMeditation(null, msg.arg1);
 
 		                    Med = msg.arg1;
+		                    mBroadcaster.broadcastIntentWithM(Med);  
 		                    //tv_Med.setText(String.valueOf(Med));
 		                    //mMusicPlayerThread.setMeditation(Med);
 		                    

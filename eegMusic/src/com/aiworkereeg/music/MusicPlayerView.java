@@ -19,6 +19,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -54,7 +56,7 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
   	boolean action_cancel_flag = false;
       int At = 50; int Med = 50;   int ApM = 100;    int AmM = 0; 
       int console_length = 4;
-      String[] console_str = new String[] {"-","-","-","-"}; //maximum rotation angle
+      String[] console_str = new String[] {"-","-","-","-"};
       String console_str_action; 
       
       CharSequence TGStatus;
@@ -171,6 +173,7 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
           
           // cache handles to our key drawables
           BackGr_Image = context.getResources().getDrawable(R.drawable.blacksquare);
+          //BackGr_Image = context.getResources().getDrawable(R.drawable.test);
          
       }
 
@@ -178,28 +181,34 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
       public void doStart() {
           synchronized (mSurfaceHolder) {
               Level1_flag = 0;  Level2_flag = 0;  Level3_flag = 0; 
-                                             
+                                    
+              
               // pick a convenient initial location for the lander sprite
               /* ===set random initial shuttle X coordinate=== */
-              pY = BackGr_H/2;   
-              pX = BackGr_W/2;
+             // BackGr_H = 1600; BackGr_W = 1000;
+             // pY = -BackGr_H/2;  pX = BackGr_W/2;
+              //pY = 800;  pX = 500;
+              
               CursorX = (float) pX - CursorR;
               CursorY_delta = BackGr_ImageScale*BackGr_W/2;
-              CircleRadius = BackGr_ImageScale*BackGr_W / 2.7f;
+              //CircleRadius = BackGr_ImageScale*BackGr_W / 2.7f;
+              CircleRadius = 280f;
               CursorX_delta = StarR*2f;
             //==========InterfaceBody===========
              
               	// 3 left-top
 	          Cx_lt_l1 = (float)pX;   
-	          Cy_lt_l1 = (float)(pY - CircleRadius); 
+	          //Cy_lt_l1 = (float)(pY - CircleRadius);
+	          Cy_lt_l1 = (float)(pY);
               mp_Play.setCenterCoordinates(Cx_lt_l1, Cy_lt_l1); mp_Play.setScale(scale_obj); mp_Play.setAlpha(0f);	                
 	                
 	            	// 4 right-bottom
 	          Cx_rb_l1 = (float)pX;   
               Cy_rb_l1 = (float)(pY + CircleRadius);  
               
-              float iconXc = (float)(pX - CircleRadius - 1.5f*StarR); 
-              float iconYc = (float)(pY - CircleRadius);
+             // float iconXc = (float)(pX - CircleRadius - 1.5f*StarR); 
+              //float iconYc = (float)(pY - CircleRadius);
+              mp_Next.setCenterCoordinates(Cx_rb_l1, Cy_rb_l1); mp_Next.setScale(scale_obj); mp_Next.setAlpha(0f);
               
               mLastTime = System.currentTimeMillis() + 100;
               setState(STATE_RUNNING);
@@ -398,8 +407,8 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
                    
           //moving one image on background
           canvas.save();
-          canvas.scale(BackGr_ImageScale,BackGr_ImageScale, (float)BackGr_W/2 , (float)BackGr_H/2); // scale
-          BackGr_Image.setBounds(0, (int)(BackGr_H/2f - BackGr_W/2), BackGr_W, (int)(BackGr_H/2f + BackGr_W/2));
+          canvas.scale(BackGr_ImageScale, BackGr_ImageScale, (float)BackGr_W/2f , (float)BackGr_H/2f); // scale
+          BackGr_Image.setBounds(0, (int)(BackGr_H/2f - BackGr_W/2f), BackGr_W, (int)(BackGr_H/2f + BackGr_W/2f));          
           BackGr_Image.draw(canvas);        
           canvas.restore();   
                   

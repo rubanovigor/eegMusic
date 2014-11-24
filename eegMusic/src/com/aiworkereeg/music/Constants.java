@@ -50,6 +50,8 @@ public final class Constants {
 
     // Defines the key for the status "extra" in an Intent
     public static final String EXTENDED_DATA_STATUS = "com.aiworkereeg.music.STATUS";
+    public static final String EXTENDED_DATA_A = "com.aiworkereeg.music.A";
+    public static final String EXTENDED_DATA_M = "com.aiworkereeg.music.M";
 
     // Defines the key for the log "extra" in an Intent
     public static final String EXTENDED_STATUS_LOG = "com.aiworkereeg.music.LOG";
