@@ -153,11 +153,13 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         float dpHeight = outMetrics.heightPixels / density;
         float dpWidth  = outMetrics.widthPixels / density;
                
+        Log.d(getString(R.string.app_name), "ir_d: starting thread");
+        
         mMusicPlayerThread.doStart(); 
         mMusicPlayerView.getThread().play_flag = Boolean.valueOf(play_flag_l);
         mMusicPlayerView.getThread().pX = dpWidth*1.5;
         mMusicPlayerView.getThread().pY = dpHeight*1.5;
-        
+
         // tv_Vel.setText(String.valueOf(20));
         //tv_info.setText("STATE_CONNECTING");
         
@@ -188,18 +190,9 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	@Override
 	public void onResume() {
 		super.onResume();
-	                
-		//mMusicPlayerView.getThread().unpause(); // pause game when Activity pauses
-        //mMusicPlayerView.getThread().setRunning(true);    
-          
-		//tgDevice = new TGDevice(bluetoothAdapter, handler);
-        //doStuff();
-          
-		//registerReceiver(receiver, new IntentFilter(EEGService.NOTIFICATION));
-		
-    	
-       // mMusicPlayerView.getThread().setRunning(true); 
-                
+		mMusicPlayerView.getThread().unpause(); 
+        mMusicPlayerView.getThread().setRunning(true);
+        
 	    Log.d(getString(R.string.app_name), "ir_d onResume()");
 	}
     @Override
@@ -208,6 +201,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
                 
     	mMusicPlayerView.getThread().pause(); // pause game when Activity pauses
         mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder  
+       // mMusicPlayerThread.interrupt();
         
         // -- store values between instances here  
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);  
@@ -217,15 +211,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         	// -- commit to storage 
         editor.commit(); 
            
-        try {
-            if (tgDevice != null) {
-                tgDevice.close();
-            }
-
-        } catch (NullPointerException e) { }
-        
-        //unregisterReceiver(receiver);
-        
+       
         finish();
         
         Log.d(getString(R.string.app_name), "ir_d onPause()");
@@ -240,7 +226,6 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 
         } catch (NullPointerException e) { }*/
         
-		mMusicPlayerThread.stop(null);
         Log.d(getString(R.string.app_name), "ir_d onStop()");
 	}
     @Override
@@ -502,7 +487,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                        tgDevice.start();
 	                        //tv_info.setText("Connected");
 	                        // -- start thread with eeg_launcher
-	                        mMusicPlayerThread.doStart(); 
+	                       // mMusicPlayerThread.doStart(); 
 	                        mMusicPlayerView.getThread().play_flag = Boolean.valueOf(play_flag_l);
 	                        break;
 	                    case TGDevice.STATE_NOT_FOUND:

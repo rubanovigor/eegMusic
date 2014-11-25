@@ -24,7 +24,7 @@
         <activity
             android:name="com.aiworkereeg.music.MainEEGmusic"
            
-            android:screenOrientation="landscape" 
+            android:screenOrientation="portrait" 
             android:background="@android:color/transparent"
             android:label="@string/app_name"  >
             <intent-filter>
