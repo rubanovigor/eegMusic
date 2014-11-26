@@ -114,7 +114,7 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
       private int BackGr_ImageScalePi = 1; //  Pi/BackGr_ImageScalePi
                 
       /** X/Y of lander center. */
-      double pX;        double pY;
+      double pX=-500;        double pY=-500;
               
       //================================        
       /* State-tracking constants */
@@ -191,8 +191,8 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
               
               CursorX = (float) pX - CursorR;
               CursorY_delta = BackGr_ImageScale*BackGr_W/2;
-              //CircleRadius = BackGr_ImageScale*BackGr_W / 2.7f;
-              CircleRadius = 280f;
+             // CircleRadius = BackGr_ImageScale*BackGr_W / 2.7f;
+              CircleRadius = 280;
               CursorX_delta = StarR*2f;
             //==========InterfaceBody===========
              

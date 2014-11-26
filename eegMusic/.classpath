@@ -10,6 +10,5 @@
 	<classpathentry kind="lib" path="libs/gson-2.2.3.jar"/>
 	<classpathentry kind="lib" path="libs/ThinkGear.jar"/>
 	<classpathentry kind="lib" path="libs/android-support-v13.jar"/>
-	<classpathentry kind="src" path="/appcompat_v7"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

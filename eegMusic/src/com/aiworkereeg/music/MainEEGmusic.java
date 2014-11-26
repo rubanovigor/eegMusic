@@ -80,15 +80,17 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	
 	TextView tv_info;	TextView tv_TimeToSel; 
 	TextView tv_consoleBoard; TextView tv_consoleLine;
-	private int At = 42;     private int Med = 42;
+	private int At = 50;     private int Med = 50;
 	TextView tv_Med;    TextView tv_Att;    TextView tv_Vel;    TextView tv_AmM;    
     	/** A handle to the thread that's actually running the animation. */
     private MusicPlayerThread mMusicPlayerThread;   
     	/** A handle to the View in which the game is running. */
     private MusicPlayerView mMusicPlayerView;
     
-   /* final int ActivityTwoRequestCode = 0;
+    final int ActivityTwoRequestCode = 0;
     Bitmap myBitmap;
+    
+    float dpWidth; float density;   float dpHeight;
     
     // -- camera 
     Camera camera;
@@ -97,41 +99,25 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     boolean previewing = false;
     LayoutInflater controlInflater = null;
     private boolean flag_camera = true; 
-    private int cameraId = 0; */
+    private int cameraId = 0;
     public String filename = "empty";
-    
-    String KEY_play_flag; 
-    boolean play_flag_local = false;
-    String play_flag_l = "false";
-    
-    // -- an instance of the status broadcast receiver
-    DownloadStateReceiver mDownloadStateReceiver;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-      //  getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-        //        WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // -- tell system to use the layout defined in our XML file
         setContentView(R.layout.activity_main_eegmusic);
                        
-        // -- get the between instance stored values (status of music player)
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        if (preferences.getString(KEY_play_flag, null) != null){
-        	play_flag_l =  preferences.getString(KEY_play_flag, null);
-        }
-        
-        // -- link thread to view     
         mMusicPlayerView = (MusicPlayerView) findViewById(R.id.mp);
         mMusicPlayerThread = mMusicPlayerView.getThread();
 
         // -- give the MusicPlayerView a handle to the TextView used for messages
         mMusicPlayerView.setTextView((TextView) findViewById(R.id.text));
 		tv_info = (TextView) findViewById(R.id.text);
-        
-		// -- give the GlassView a handle to the TextView used for messages
+        // -- give the GlassView a handle to the TextView used for messages
         tv_Att = (TextView) findViewById(R.id.Att_text);
         tv_Med = (TextView) findViewById(R.id.Med_text);       
         tv_Vel = (TextView) findViewById(R.id.Vel_text);
@@ -141,33 +127,29 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         tv_consoleBoard = (TextView) findViewById(R.id.console_info);
         tv_consoleLine = (TextView) findViewById(R.id.console_line);
         
-        // =========================================
-        // -- in dev
-        StartEEGService();
         
         Display display = getWindowManager().getDefaultDisplay();
         DisplayMetrics outMetrics = new DisplayMetrics ();
         display.getMetrics(outMetrics);
 
-        float density  = getResources().getDisplayMetrics().density;
-        float dpHeight = outMetrics.heightPixels / density;
-        float dpWidth  = outMetrics.widthPixels / density;
-               
-        Log.d(getString(R.string.app_name), "ir_d: starting thread");
+        density  = getResources().getDisplayMetrics().density;
+        dpHeight = outMetrics.heightPixels / density;
+        dpWidth  = outMetrics.widthPixels / density;
+                       
         
-        mMusicPlayerThread.doStart(); 
-        mMusicPlayerView.getThread().play_flag = Boolean.valueOf(play_flag_l);
-        mMusicPlayerView.getThread().pX = dpWidth*1.5;
-        mMusicPlayerView.getThread().pY = dpHeight*1.5;
-
-        // tv_Vel.setText(String.valueOf(20));
-        //tv_info.setText("STATE_CONNECTING");
-        
-       // =========================================
-        
-        
+        if (savedInstanceState == null) {
+            // we were just launched: set up a new game
+           // mGlassThread.setState(GlassThread.STATE_READY);
+          //  mMusicPlayerThread.setState(MusicPlayerThread.STATE_READY);
+            //Log.w(this.getClass().getName(), "SIS is null");
+        } else {
+            // we are being restored: resume a previous game
+           // mMusicPlayerThread.restoreState(savedInstanceState);        	
+            //Log.w(this.getClass().getName(), "SIS is nonnull");
+        }
+				
         /* Checking BT and connecting to the TG device */
-      /*  bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {	// Alert user that Bluetooth is not available
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             finish();
@@ -175,11 +157,28 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         } else {
             tgDevice = new TGDevice(bluetoothAdapter, handler);
             //Toast.makeText(this, "Bluetooth is available ir", Toast.LENGTH_LONG).show();
-           // doStuff();
-        }	*/
-        
-        
-                           
+            doStuff();
+        }	
+         
+
+        // -- camera block        
+        	//getWindow().setFormat(PixelFormat.UNKNOWN);
+        surfaceView = (SurfaceView)findViewById(R.id.camerapreview);
+        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.addCallback(this);
+        	//surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+               
+		Log.d(getString(R.string.app_name), "ir_d onCreate()"); 
+       
+      /*  Button buttonTakePicture = (Button)findViewById(R.id.takepicture);
+        buttonTakePicture.setOnClickListener(new Button.OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				camera.takePicture(myShutterCallback, myPictureCallback_RAW, myPictureCallback_JPG);
+			}});*/
+                  
 	}
 
 	@Override
@@ -190,62 +189,51 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	@Override
 	public void onResume() {
 		super.onResume();
-		mMusicPlayerView.getThread().unpause(); 
-        mMusicPlayerView.getThread().setRunning(true);
-        
+		//initializeCamera();
+	      
+		//mMusicPlayerView.getThread().unpause(); // pause game when Activity pauses
+        //mMusicPlayerView.getThread().setRunning(true); //correctly destroy SurfaceHolder, ir   
+          
 	    Log.d(getString(R.string.app_name), "ir_d onResume()");
 	}
     @Override
     public void onPause() {        
         super.onPause();
-                
+        
     	mMusicPlayerView.getThread().pause(); // pause game when Activity pauses
-        mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder  
-       // mMusicPlayerThread.interrupt();
-        
-        // -- store values between instances here  
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);  
-        SharedPreferences.Editor editor = preferences.edit();  // Put the values from the UI 
-        	//editor.putBoolean(KEY_play_flag, true); // value to store  
-        editor.putString(KEY_play_flag, String.valueOf(mMusicPlayerView.getThread().play_flag));
-        	// -- commit to storage 
-        editor.commit(); 
-           
-       
-        finish();
-        
+        mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder, ir   
+               
         Log.d(getString(R.string.app_name), "ir_d onPause()");
     }
     @Override
 	public void onStop() { 
 		super.onStop();
-       /* try {
+        try {
             if (tgDevice != null) {
                 tgDevice.close();
             }
 
-        } catch (NullPointerException e) { }*/
+          //  releaseCamera();
+
+        } catch (NullPointerException e) { }
         
         Log.d(getString(R.string.app_name), "ir_d onStop()");
 	}
     @Override
 	public void onDestroy() {  
     	super.onDestroy();  
-        /*try {
+       /* try {
             if (tgDevice != null) {
                 tgDevice.close();
             }
+
+           // releaseCamera();
+
         } catch (NullPointerException e) { } */
 
        // mMusicPlayerView.getThread().pause(); // pause game when Activity pauses
        // mMusicPlayerView.getThread().setRunning(false); //correctly destroy SurfaceHolder, ir   
            
-        /*// If the DownloadStateReceiver still exists, unregister it and set it to null
-        if (mDownloadStateReceiver != null) {
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(mDownloadStateReceiver);
-            mDownloadStateReceiver = null;
-        }*/
-        
 	    Log.d(getString(R.string.app_name), "ir_d onDestroy()");
 	}    
    
@@ -259,32 +247,9 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	protected void onSaveInstanceState(Bundle outState) {
 	        // just have the View's thread save its state into our Bundle
 	        super.onSaveInstanceState(outState);
-	        //play_flag_local = mMusicPlayerView.getThread().play_flag;
-	        //outState.putBoolean(KEY_play_flag, Boolean.valueOf(mMusicPlayerView.getThread().play_flag));
-	       // outState.putBoolean(KEY_play_flag, true);
-	        //mMusicPlayerView.getThread().saveState(outState);
+	       // mGlassThread.saveState(outState);
 	}
 	   
-	@Override
-	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-	   super.onRestoreInstanceState(savedInstanceState);
-	   	   
-       //if (savedInstanceState == null && String.valueOf(savedInstanceState.getBoolean(KEY_play_flag)) != null) {
-    	if (savedInstanceState == null) {
-          //	play_flag_local = savedInstanceState.getBoolean(KEY_play_flag);
-       	
-           // we were just launched: set up a new game
-          // mGlassThread.setState(GlassThread.STATE_READY);
-         //  mMusicPlayerThread.setState(MusicPlayerThread.STATE_READY);
-           //Log.w(this.getClass().getName(), "SIS is null");
-       } else {
-           // we are being restored: resume a previous game
-          // mMusicPlayerThread.restoreState(savedInstanceState);        	
-           //Log.w(this.getClass().getName(), "SIS is nonnull");
-       }
-    	//tv_Vel.setText(String.valueOf(true)) ;
-	}
-	
 		// -- tgDevice State
 	public void doStuff() {
 	   //Toast.makeText(this, "connecting...", Toast.LENGTH_SHORT).show();
@@ -292,181 +257,48 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	       tgDevice.connect(RAW_ENABLED);
 	   }
 	}
-	    
-	// -- Start EEG service in background
-	public void StartEEGService() {
-        /* Creates an intent filter for DownloadStateReceiver that intercepts broadcast Intents */
-        
-        // The filter's action is BROADCAST_ACTION
-        IntentFilter statusIntentFilter = new IntentFilter(Constants.BROADCAST_ACTION);
-        
-        // -- sets the filter's category to DEFAULT
-        statusIntentFilter.addCategory(Intent.CATEGORY_DEFAULT);
-                
-        // -- instantiates a new DownloadStateReceiver
-        mDownloadStateReceiver = new DownloadStateReceiver();
-        
-        // -- registers the DownloadStateReceiver and its intent filters
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mDownloadStateReceiver, statusIntentFilter);
-        
-        Intent intent = new Intent(this, EEGService.class);
-    	startService(intent);
-    		    
-	    Log.d(getString(R.string.app_name), "ir_d StartEEGService()");
-	}
-		
 	
+		    
+	    // -- save bitmap of screenshot
+	public void saveBitmap(Bitmap bitmap) {
+	     //   String filePath = Environment.getExternalStorageDirectory() + File.separator + "Pictures/screenshot.png";
+	       // File imagePath = new File(filePath);
+	        
+	        File pictureFileDir = getDir();
+	        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+    	    String date = dateFormat.format(new Date());
+    	    String photoFile = "eeg_scr" + date + ".png";
+
+    	    String filePath = pictureFileDir.getPath() + File.separator + photoFile;
+    	    File imagePath = new File(filePath);
+	        
+	        FileOutputStream fos;
+	        try {
+	            fos = new FileOutputStream(imagePath);
+	            bitmap.compress(CompressFormat.PNG, 100, fos);
+	            fos.flush();
+	            fos.close();
+	           // sendMail(filePath);
+	        } catch (FileNotFoundException e) {
+	            Log.e("GREC", e.getMessage(), e);
+	        } catch (IOException e) {
+	            Log.e("GREC", e.getMessage(), e);
+	        }
+	}
+	    
+	    
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 	        switch (keyCode) {
 	            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-	            case KeyEvent.KEYCODE_HOME:
-	            {
-	 	          // android.os.Process.killProcess(android.os.Process.myPid());
-	 	        }
 	            case KeyEvent.KEYCODE_HEADSETHOOK:
 	                startService(new Intent(MusicService.ACTION_TOGGLE_PLAYBACK));
 	                return true;
 	        }
-	        
 	        return super.onKeyDown(keyCode, event);
 	}
-	   	    
-	 /**
-     * This class uses the BroadcastReceiver framework to detect and handle status messages from
-     * the service that downloads URLs.
-     */
-    private class DownloadStateReceiver extends BroadcastReceiver {
-    	
-        private DownloadStateReceiver() {
-            
-            // prevents instantiation by other packages.
-        }
-        /**
-         *
-         * This method is called by the system when a broadcast Intent is matched by this class'
-         * intent filters
-         *
-         * @param context An Android context
-         * @param intent The incoming broadcast Intent
-         */
-       
-        @Override
-        public void onReceive(Context context, Intent intent) {
-        	//tv_info.setText("on Receive");
-        	Log.d(getString(R.string.app_name), "State: STARTED");
-            /*
-             * Gets the status from the Intent's extended data, and chooses the appropriate action
-             */
-            switch (intent.getIntExtra(Constants.EXTENDED_DATA_STATUS,
-                    Constants.STATE_ACTION_STARTED)) {
-                
-                // Logs "started" state
-                case Constants.STATE_ACTION_STARTED:
-                    if (Constants.LOGD) {                        
-                        Log.d(getString(R.string.app_name), "State: STARTED");
-                    }
-                    break;
-                // Logs "connecting to network" state
-                case Constants.STATE_CONNECTING:
-                	//tv_info.setText("STATE_CONNECTING");
-                	tv_consoleLine.setText("CONNECTING");
-                    if (Constants.LOGD) {                        
-                        Log.d(getString(R.string.app_name), "State: CONNECTING");
-                    }
-                    break;
-
-                // Starts displaying data when the RSS download is complete
-                case Constants.STATE_CONNECTED:
-                    // Logs the status
-                	tv_consoleLine.setText("STATE_CONNECTED");
-                     
-                    if (Constants.LOGD) {                     
-                        Log.d(getString(R.string.app_name), "STATE: CONNECTED");
-                    }
-
-                default:
-                    break;
-            }
-            
-            // -- if the incoming Intent is a sending A/M
-            //if (intent.getAction().equals(Constants.EXTENDED_DATA_A)) {
-               // tv_Vel.setText(intent.getIntExtra(Constants.EXTENDED_DATA_A, At));
-            	At = intent.getIntExtra(Constants.EXTENDED_DATA_A, At);
-            	Med = intent.getIntExtra(Constants.EXTENDED_DATA_M, Med);
-            	
-            	mMusicPlayerThread.setAttention(At);
-            	mMusicPlayerThread.setMeditation(Med);
-            	//String capital = intent.getStringExtra(Constants.EXTRA_CAPITAL);
-                //mTvCapital.setText("Capital : " + capital);
-                
-            	// --display Att/Med and they difference
-            	tv_Att.setText(String.valueOf(At));
-            	tv_Med.setText(String.valueOf(Med));
-            	tv_AmM.setText(String.valueOf(At-Med)); // display Att-Med
-            	// -- change size and color of Att-Med text view                   
-	            if (Math.abs(At-Med) <= 15)	{tv_AmM.setTextSize(22); tv_AmM.setTextColor(Color.GRAY);}
-	            	else if (Math.abs(At-Med) <= 30) {tv_AmM.setTextSize(22); tv_AmM.setTextColor(Color.GRAY); }
-	            
-	            if (At-Med < -45 || At-Med > 45) {tv_AmM.setTextSize(25); tv_AmM.setTextColor(Color.GREEN);}
-	            	else if (At-Med < -30 || At-Med > 30) {tv_AmM.setTextSize(25); tv_AmM.setTextColor(Color.GREEN); }
-	           
-	            
-		      /*  // -- do appropriate action for music player
-	            	// --play/stop/playnext
-	            if (mMusicPlayerView.getThread().play_flag == true)
-	        		{ 
-	            	 startService(new Intent(MusicService.ACTION_PLAY)); 
-	            	}
-	            if (mMusicPlayerView.getThread().stop_flag == true)
-	    			{ 
-	            	 startService(new Intent(MusicService.ACTION_STOP));
-	    			}            
-	            if (mMusicPlayerView.getThread().next_flag == true)
-	    			{ 
-	                 startService(new Intent(MusicService.ACTION_STOP));
-	            	 startService(new Intent(MusicService.ACTION_SKIP));
-	    			 mMusicPlayerView.getThread().next_flag = false;
-	    			}
-	            
-	        	// -- display velocity based on accel_alpha [0..2.5]
-                float vel = mMusicPlayerView.getThread().accel_alpha;
-                if (vel>=2f) {tv_Vel.setText("4");}
-                if (vel>=1.5f && vel<2f) {tv_Vel.setText("3");}
-                if (vel>=1f && vel<1.5f) {tv_Vel.setText("2");}
-                if (vel>=0.5f && vel<1f) {tv_Vel.setText("1");}
-                if (vel<0.5f) {tv_Vel.setText("0");}  
-	            
-
-            	// -- display time to action selection
-	            tv_TimeToSel.setTextColor(Color.WHITE);
-	            float tts = mMusicPlayerView.getThread().TimeToSelect;
-	            tts = tts*10f;
-	            tts = Math.round(tts);
-	            tts = tts/10f;
-	            //if (tts < 3f && vel<=0 && mMusicPlayerView.getThread().flag_Cursor)
-	            //if (mMusicPlayerView.getThread().action_cancel_flag){tv_TimeToSel.setText("cancel");}
-	            if (tts < 3f &&  mMusicPlayerView.getThread().flag_Cursor) {
-	            	tv_TimeToSel.setTextSize(20); tv_TimeToSel.setText(String.valueOf(Math.round(tts)) ); 
-	            	mMusicPlayerView.getThread().msgBoard = " ";}
-	            else {
-	            	tv_TimeToSel.setTextSize(20); tv_TimeToSel.setText(mMusicPlayerView.getThread().msgBoard);
-	            	}
-	            if (mMusicPlayerView.getThread().action_cancel_flag){
-	            	tv_TimeToSel.setTextSize(20);tv_TimeToSel.setText("cancel");
-	            	mMusicPlayerView.getThread().msgBoard = "";
-	            	}
-	            */
-	            // -- setup Board/Console text view
-	            tv_consoleBoard.setTextSize(15);tv_consoleBoard.setText(mMusicPlayerView.getThread().consoleBoard);
-	            tv_consoleLine.setTextSize(30); tv_consoleLine.setText(mMusicPlayerView.getThread().consoleLine);
-            
-            //}
-            
-        }
-    }
-        
+	    	    
+	    
 	    
   // -- Handles messages from TGDevice 
 	private final Handler handler = new Handler() {
@@ -480,25 +312,26 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                        break;
 	                    case TGDevice.STATE_CONNECTING:
 	                    	//mGlassThread.setTGStatus("Connecting...");
-	                    	//tv_info.setText("Connecting...");
+	                    	tv_info.setText("Connecting...");
 	                    	//releaseCamera();
 	                        break;
 	                    case TGDevice.STATE_CONNECTED:
 	                        tgDevice.start();
-	                        //tv_info.setText("Connected");
+	                        tv_info.setText("Connected");
 	                        // -- start thread with eeg_launcher
-	                       // mMusicPlayerThread.doStart(); 
-	                        mMusicPlayerView.getThread().play_flag = Boolean.valueOf(play_flag_l);
+	                        mMusicPlayerThread.doStart(); 	  
+	                        mMusicPlayerView.getThread().pX = dpWidth*1.5;
+	                        mMusicPlayerView.getThread().pY = dpHeight*1.5;
+	                        
 	                        break;
 	                    case TGDevice.STATE_NOT_FOUND:
-	                    	//tv_info.setText("neurosky mindwave mobile was not found");
+	                    	tv_info.setText("neurosky mindwave mobile was not found");
 	                        break;
 	                    case TGDevice.STATE_NOT_PAIRED:
-	                    	//tv_info.setText("neurosky mindwave mobile not paired !!!!!");
+	                    	tv_info.setText("neurosky mindwave mobile not paired !!!!!");
 	                        break;
 	                    case TGDevice.STATE_DISCONNECTED:
-	                    	//tv_info.setText("Disconnected");
-	                    	//doStuff();
+	                    	tv_info.setText("Disconnected");
 	                    }
 
 	                    break;
@@ -547,7 +380,35 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    	 mMusicPlayerView.getThread().back_flag = false;
             				// onBackPressed();
             				} */
-	                    	                    
+	                    
+	                    	// -- camera/twitter/PrtSc
+	                   /* if (mMusicPlayerView.getThread().Picture_flag == true)
+        				{ 	                    	
+	                    	camera.takePicture(myShutterCallback, myPictureCallback_RAW, myPictureCallback_JPG);	                    	
+	                    	mMusicPlayerView.getThread().Picture_flag = false;
+        				}
+	                    if (mMusicPlayerView.getThread().TwitPicture_flag == true)
+        				{ 	                    	
+	                    	//camera.takePicture(myShutterCallback, myPictureCallback_RAW, myPictureCallback_JPG);		                    	                    	
+	                    	mMusicPlayerView.getThread().TwitPicture_flag = false;
+        				}*/
+	                    
+	                    if (mMusicPlayerView.getThread().Prtscr_flag == true)
+        				{ 	                    	
+		                    View v1 = findViewById(android.R.id.content).getRootView() ; 
+	                    	v1.setDrawingCacheEnabled(true);
+		                    myBitmap = v1.getDrawingCache();
+		                    saveBitmap(myBitmap);
+	                    	
+	                    	mMusicPlayerView.getThread().Prtscr_flag = false;
+	                    		// onBackPressed();
+        				}
+	                    
+	                   // if (mMusicPlayerView.getThread().MusicPlayerFlag == true) { camera.stopPreview(); previewing = false;}
+	                   // if (mMusicPlayerView.getThread().DnaConsoleFlag == true) {camera.stopPreview(); previewing = false;}
+	                   // if (mMusicPlayerView.getThread().MusicPlayerFlag == false) { previewing = true;}
+	                   // if (mMusicPlayerView.getThread().DnaConsoleFlag == false) { previewing = true;}
+	                    
 	                    	// -- display velocity based on accel_alpha [0..2.5]
 	                    float vel = mMusicPlayerView.getThread().accel_alpha;
 	                    if (vel>=2f) {tv_Vel.setText("4");}
@@ -555,9 +416,6 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    if (vel>=1f && vel<1.5f) {tv_Vel.setText("2");}
 	                    if (vel>=0.5f && vel<1f) {tv_Vel.setText("1");}
 	                    if (vel<0.5f) {tv_Vel.setText("0");}  
-	                    
-	                    // -- for testing
-	                    //tv_Vel.setText(String.valueOf(mMusicPlayerView.getThread().play_flag)) ;
 	                    
 	                    	// -- display time to action selection
 	                    tv_TimeToSel.setTextColor(Color.WHITE);
@@ -580,7 +438,24 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    
 	                    tv_consoleBoard.setTextSize(15);tv_consoleBoard.setText(mMusicPlayerView.getThread().consoleBoard);
 	                    tv_consoleLine.setTextSize(30); tv_consoleLine.setText(mMusicPlayerView.getThread().consoleLine);
-	                    	                    		                    
+	                   
+	                    
+
+	                    /* tv_Att.setText(String.valueOf(At)); // display meditation
+	                    	// -- change size and color of Att text view
+	                    if (At < 30) {
+	                    	//tv_Att.setTextColor(Color.YELLOW);
+	                    	tv_Att.setTextSize(20);
+	                    } else {
+	                        if (At <70) {
+	                        	//tv_Att.setTextColor(Color.GREEN);
+	                        	tv_Att.setTextSize(30);
+	                        } else {
+	                        	//tv_Att.setTextColor(Color.RED);
+	                        	tv_Att.setTextSize(40);
+	                        }                    
+	                    } */
+ 	                    		                    
 	                    // --saving data to file
 	                    /* String filename ="so_v2_<date_time>.csv";
 	                    Time now = new Time();
@@ -599,7 +474,21 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    Med = msg.arg1;
 	                    tv_Med.setText(String.valueOf(Med));
 	                    mMusicPlayerThread.setMeditation(Med);
-	                    	 
+	                    
+	                    // -- change size and color of Med text view
+	                   /* if (Med < 30) {
+	                    	//tv_Med.setTextColor(Color.YELLOW);
+	                    	//tv_Med.setTextSize(20);
+	                    } else {
+	                        if (Med <70){
+	                        	//tv_Med.setTextColor(Color.GREEN);
+	                        	//tv_Med.setTextSize(30);
+	                        } else {
+	                        	//tv_Med.setTextColor(Color.RED);
+	                        	//tv_Med.setTextSize(40);
+	                        }                    
+	                    }*/
+	 
 	                    tv_AmM.setText(String.valueOf(At-Med)); // display Att-Med
 	                    	// -- change size and color of Att-Med text view                   
 	                    if (Math.abs(At-Med) <= 15)	{tv_AmM.setTextSize(22); tv_AmM.setTextColor(Color.GRAY);}
@@ -645,25 +534,188 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 
 	            }
 	        };
+	        
+	    // -- Handles messages from Camera 
+	        ShutterCallback myShutterCallback = new ShutterCallback(){
 
-@Override
-public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
-	// TODO Auto-generated method stub
-	
-}
+	    		@Override
+	    		public void onShutter() {
+	    			// TODO Auto-generated method stub
+	    			
+	    		}
+	    	};
+	    		
+	    	PictureCallback myPictureCallback_RAW = new PictureCallback(){
 
-@Override
-public void surfaceCreated(SurfaceHolder arg0) {
-	// TODO Auto-generated method stub
-	
-}
+	    		@Override
+	    		public void onPictureTaken(byte[] arg0, Camera arg1) {
+	    			// TODO Auto-generated method stub
+	    			
+	    		}
+	    	}; 
+	    		
+	    	PictureCallback myPictureCallback_JPG = new PictureCallback(){
 
-@Override
-public void surfaceDestroyed(SurfaceHolder arg0) {
-	// TODO Auto-generated method stub
-	
-}
+	    	@Override
+	    	public void onPictureTaken(byte[] arg0, Camera arg1) {
+	    			// TODO Auto-generated method stub
+	    		//Bitmap bitmapPicture = BitmapFactory.decodeByteArray(arg0, 0, arg0.length);
+	    		
+	    		Log.d(getString(R.string.app_name), "ir_d onPictureTaken() --> bitmapPicture");
+	    		try {
+					camera.setPreviewDisplay(surfaceHolder);
+					camera.startPreview();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				//previewing = true;
+				
+				// --- saving picture
+				File pictureFileDir = getDir();
+	    	    if (!pictureFileDir.exists() && !pictureFileDir.mkdirs()) {
+	    	      //Log.d(MakePhotoActivity.DEBUG_TAG, "Can't create directory to save image.");
+	    	     // Toast.makeText(context, "Can't create directory to save image.", Toast.LENGTH_LONG).show();
+	    	      return;
+	    	    }
+	    	    
+	    	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+	    	    String date = dateFormat.format(new Date());
+	    	    String photoFile = "eeg_" + date + ".jpg";
 
-	
-	
+	    	    filename = pictureFileDir.getPath() + File.separator + photoFile;
+
+	    	    File pictureFile = new File(filename);
+	    	    try {
+		    	      FileOutputStream fos = new FileOutputStream(pictureFile);
+		    	      fos.write(arg0);
+		    	      fos.close();
+		    	     // Toast.makeText(context, "New Image saved:" + photoFile,  Toast.LENGTH_LONG).show();
+		    	    } catch (Exception error) {
+		    	     // Log.d(MakePhotoActivity.DEBUG_TAG, "File" + filename + "not saved: "  + error.getMessage());
+		    	      //Toast.makeText(context, "Image could not be saved.", Toast.LENGTH_LONG).show();
+		    	    }
+	    	     
+	    	   // releaseCamera();
+	    	}
+	    };
+
+	    	  
+	        private File getDir() {
+	    	    File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+	    	    return new File(sdDir, "eeg_picture");
+	        }
+	    	
+	    	
+	    	@Override
+	    	public void surfaceChanged(SurfaceHolder holder, int format, int width,	int height) {			
+	    		//initializeCamera();
+	            // -- If your preview can change or rotate, take care of those events here.
+	            // -- Make sure to stop the preview before resizing or reformatting it.
+	    	
+	            if (holder.getSurface() == null){
+	            	Log.d(getString(R.string.app_name), "ir_d surfaceChanged --> preview surface does not exist");
+	                return;
+	            }
+
+	            // -- stop preview before making changes
+	            try {
+	                camera.stopPreview();
+	                Log.d(getString(R.string.app_name), "ir_d surfaceChanged --> camera.stopPreview()  " + camera);
+	            } catch (Exception e){ // ignore: tried to stop a non-existent preview
+	            	Log.d(getString(R.string.app_name), "ir_d surfaceChanged --> Error camera.stopPreview()  " + camera);
+	            }
+
+	            // set preview size and make any resize, rotate or
+	            // reformatting changes here
+
+	            // -- start preview with new settings	            
+	    		if (camera != null) {
+	    			try { 
+	    				camera.setPreviewDisplay(holder);
+	    				// -- camera.setPreviewDisplay(surfaceHolder);
+	    				camera.startPreview();
+	                    Log.d(getString(R.string.app_name),"ir_d surfaceChanged --> camera.setPreviewDisplay()  " + camera);
+	                } catch (IOException e) 
+	                { Log.d(getString(R.string.app_name), "ir_d surfaceChanged --> Error setting camera preview:  " + camera); }
+	                	
+	    			camera.setDisplayOrientation(90);
+	            }
+	    		
+	    	}
+
+	    	@Override
+	    	public void surfaceCreated(SurfaceHolder holder) {
+	    		// -- The Surface has been created, now tell the camera where to draw the preview.
+	    		initializeCamera();
+
+	    		Log.d(getString(R.string.app_name), "ir_d surfaceCreated()");
+	    		
+	    	}
+
+	    	@Override
+	    	public void surfaceDestroyed(SurfaceHolder holder) {
+	    	    // Surface will be destroyed when we return, so stop the preview.
+	    	    if (camera != null) {// Call stopPreview() to stop updating the preview surface.
+	    	        camera.stopPreview();
+	    	    }
+	    	    releaseCamera();
+	    	    
+	    		Log.d(getString(R.string.app_name), "ir_d surfaceDestroyed()");
+	    	}
+
+	        private void initializeCamera()
+	        { 
+	            // -- do we have a camera?
+	            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+	              Toast.makeText(this, "No camera on this device", Toast.LENGTH_LONG).show();
+	            } else {
+	              //cameraId = findFrontFacingCamera();
+	              cameraId = 0;
+	              if (cameraId < 0) {
+	                Toast.makeText(this, "No front facing camera found.",Toast.LENGTH_LONG).show();
+	              }
+	            }
+	            
+	            // -- open camera
+	            try {
+	            	releaseCamera();
+	            	camera = Camera.open(cameraId);
+	            	Log.d(getString(R.string.app_name), "ir_d initializeCamera() --> Camera.open()  " + camera + "  " + cameraId);
+	            } catch (Exception e) {
+	                Log.d(getString(R.string.app_name), "ir_d initializeCamera() failed to open Camera");
+	                
+	            }
+	            
+	        }
+
+	        private void releaseCamera() {
+	            if (camera != null) {
+	                camera.stopPreview();
+	                camera.release();
+	                camera = null;
+	                
+	                Log.d(getString(R.string.app_name), "ir_d releaseCamera() --> Camera.release() true  " + camera );
+	            }
+	            
+	            Log.d(getString(R.string.app_name), "ir_d releaseCamera() --> Camera.release() false  " + camera );
+	            
+	        }
+
+	        private int findFrontFacingCamera() {
+	            int cameraId = -1;
+	            // Search for the front facing camera
+	            int numberOfCameras = Camera.getNumberOfCameras();
+	            for (int i = 0; i < numberOfCameras; i++) {
+	              CameraInfo info = new CameraInfo();
+	              Camera.getCameraInfo(i, info);
+	              if (info.facing == CameraInfo.CAMERA_FACING_FRONT) {
+	            	  Log.d(getString(R.string.app_name), "ir_d findFrontFacingCamera() CAMERA_FACING_FRONT found" );
+	                cameraId = i;
+	                break;
+	              }
+	            }
+	            return cameraId;
+	          }
 }

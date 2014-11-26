@@ -44,6 +44,7 @@ public final class R {
         public static final int TimeToSel=0x7f06000e;
         public static final int Vel_label=0x7f060006;
         public static final int Vel_text=0x7f060005;
+        public static final int camerapreview=0x7f060010;
         public static final int console_info=0x7f06000f;
         public static final int console_line=0x7f06000c;
         public static final int mp=0x7f060001;
