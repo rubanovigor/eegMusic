@@ -48,6 +48,7 @@ public final class R {
         public static final int console_line=0x7f06000c;
         public static final int mp=0x7f060001;
         public static final int screen=0x7f060000;
+        public static final int status=0x7f060010;
         public static final int text=0x7f060002;
         public static final int text1_empty=0x7f060009;
         public static final int text2_empty=0x7f060004;

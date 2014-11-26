@@ -81,7 +81,8 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	TextView tv_info;	TextView tv_TimeToSel; 
 	TextView tv_consoleBoard; TextView tv_consoleLine;
 	private int At = 42;     private int Med = 42;
-	TextView tv_Med;    TextView tv_Att;    TextView tv_Vel;    TextView tv_AmM;    
+	TextView tv_Med;    TextView tv_Att;    TextView tv_Vel; 
+	TextView tv_AmM; TextView tv_status;      
     	/** A handle to the thread that's actually running the animation. */
     private MusicPlayerThread mMusicPlayerThread;   
     	/** A handle to the View in which the game is running. */
@@ -99,6 +100,8 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
     private boolean flag_camera = true; 
     private int cameraId = 0; */
     public String filename = "empty";
+    
+    String EEGstate = "searching for EEG";
     
     String KEY_play_flag; 
     boolean play_flag_local = false;
@@ -136,6 +139,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         tv_Med = (TextView) findViewById(R.id.Med_text);       
         tv_Vel = (TextView) findViewById(R.id.Vel_text);
         tv_AmM = (TextView) findViewById(R.id.AmM_text);
+        tv_status = (TextView) findViewById(R.id.status);
         
         tv_TimeToSel = (TextView) findViewById(R.id.TimeToSel);
         tv_consoleBoard = (TextView) findViewById(R.id.console_info);
@@ -160,7 +164,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
         mMusicPlayerView.getThread().pX = dpWidth*1.5;
         mMusicPlayerView.getThread().pY = dpHeight*1.5;
 
-        // tv_Vel.setText(String.valueOf(20));
+        //tv_Vel.setText(String.valueOf(mMusicPlayerView.getThread().pY));
         //tv_info.setText("STATE_CONNECTING");
         
        // =========================================
@@ -192,7 +196,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 		super.onResume();
 		mMusicPlayerView.getThread().unpause(); 
         mMusicPlayerView.getThread().setRunning(true);
-        
+        EEGstate = "EEG";
 	    Log.d(getString(R.string.app_name), "ir_d onResume()");
 	}
     @Override
@@ -362,16 +366,24 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
             switch (intent.getIntExtra(Constants.EXTENDED_DATA_STATUS,
                     Constants.STATE_ACTION_STARTED)) {
                 
-                // Logs "started" state
                 case Constants.STATE_ACTION_STARTED:
-                    if (Constants.LOGD) {                        
-                        Log.d(getString(R.string.app_name), "State: STARTED");
-                    }
                     break;
-                // Logs "connecting to network" state
+                   
+                // -- check status of the EEG
+                case Constants.STATE_EEGnotPaired:
+                	EEGstate = "EEG not Paired";
+                    break;
+                case Constants.STATE_EEGnotFound:
+                	EEGstate = "EEG not Found";
+                    break;
+                case Constants.STATE_Disconnected:
+                	EEGstate = "EEG Disconnected";
+                    break;
+                    
                 case Constants.STATE_CONNECTING:
+                	EEGstate = "Connecting to EEG";
                 	//tv_info.setText("STATE_CONNECTING");
-                	tv_consoleLine.setText("CONNECTING");
+                	//tv_consoleLine.setText("CONNECTING");
                     if (Constants.LOGD) {                        
                         Log.d(getString(R.string.app_name), "State: CONNECTING");
                     }
@@ -379,8 +391,9 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 
                 // Starts displaying data when the RSS download is complete
                 case Constants.STATE_CONNECTED:
+                	EEGstate = "EEG";
                     // Logs the status
-                	tv_consoleLine.setText("STATE_CONNECTED");
+                	//tv_consoleLine.setText("STATE_CONNECTED");
                      
                     if (Constants.LOGD) {                     
                         Log.d(getString(R.string.app_name), "STATE: CONNECTED");
@@ -405,6 +418,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
             	tv_Att.setText(String.valueOf(At));
             	tv_Med.setText(String.valueOf(Med));
             	tv_AmM.setText(String.valueOf(At-Med)); // display Att-Med
+            	//tv_status.setText(EEGstate);
             	// -- change size and color of Att-Med text view                   
 	            if (Math.abs(At-Med) <= 15)	{tv_AmM.setTextSize(22); tv_AmM.setTextColor(Color.GRAY);}
 	            	else if (Math.abs(At-Med) <= 30) {tv_AmM.setTextSize(22); tv_AmM.setTextColor(Color.GRAY); }
@@ -413,8 +427,8 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	            	else if (At-Med < -30 || At-Med > 30) {tv_AmM.setTextSize(25); tv_AmM.setTextColor(Color.GREEN); }
 	           
 	            
-		      /*  // -- do appropriate action for music player
-	            	// --play/stop/playnext
+		        // -- do appropriate action for music player
+	            	// --play/stop/playnext            
 	            if (mMusicPlayerView.getThread().play_flag == true)
 	        		{ 
 	            	 startService(new Intent(MusicService.ACTION_PLAY)); 
@@ -425,8 +439,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	    			}            
 	            if (mMusicPlayerView.getThread().next_flag == true)
 	    			{ 
-	                 startService(new Intent(MusicService.ACTION_STOP));
-	            	 startService(new Intent(MusicService.ACTION_SKIP));
+	                 startService(new Intent(MusicService.ACTION_SKIP));
 	    			 mMusicPlayerView.getThread().next_flag = false;
 	    			}
 	            
@@ -457,11 +470,14 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	            	tv_TimeToSel.setTextSize(20);tv_TimeToSel.setText("cancel");
 	            	mMusicPlayerView.getThread().msgBoard = "";
 	            	}
-	            */
+	            
 	            // -- setup Board/Console text view
 	            tv_consoleBoard.setTextSize(15);tv_consoleBoard.setText(mMusicPlayerView.getThread().consoleBoard);
 	            tv_consoleLine.setTextSize(30); tv_consoleLine.setText(mMusicPlayerView.getThread().consoleLine);
-            
+                
+	            // -- for testing only
+	            //tv_status.setText(String.valueOf(mMusicPlayerView.getThread().curr_alpha_obj1));
+	            
             //}
             
         }
@@ -525,7 +541,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    
 	                    // -- do appropriate action for music player
 	                    	// --play/stop/playnext
-	                    if (mMusicPlayerView.getThread().play_flag == true)
+	                  /*  if (mMusicPlayerView.getThread().play_flag == true)
                     		{ 
 	                    	 startService(new Intent(MusicService.ACTION_PLAY)); 
 	                    	}
@@ -538,7 +554,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
                 			{ 
 	                    	 startService(new Intent(MusicService.ACTION_SKIP));
                 			 mMusicPlayerView.getThread().next_flag = false;
-                			}
+                			}*/
 	                    
 	                   /* if (mMusicPlayerView.getThread().back_flag == true)
             				{ 
@@ -549,18 +565,18 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
             				} */
 	                    	                    
 	                    	// -- display velocity based on accel_alpha [0..2.5]
-	                    float vel = mMusicPlayerView.getThread().accel_alpha;
+	                  /*  float vel = mMusicPlayerView.getThread().accel_alpha;
 	                    if (vel>=2f) {tv_Vel.setText("4");}
 	                    if (vel>=1.5f && vel<2f) {tv_Vel.setText("3");}
 	                    if (vel>=1f && vel<1.5f) {tv_Vel.setText("2");}
 	                    if (vel>=0.5f && vel<1f) {tv_Vel.setText("1");}
-	                    if (vel<0.5f) {tv_Vel.setText("0");}  
+	                    if (vel<0.5f) {tv_Vel.setText("0");}  */
 	                    
 	                    // -- for testing
 	                    //tv_Vel.setText(String.valueOf(mMusicPlayerView.getThread().play_flag)) ;
 	                    
 	                    	// -- display time to action selection
-	                    tv_TimeToSel.setTextColor(Color.WHITE);
+	                  /*  tv_TimeToSel.setTextColor(Color.WHITE);
 	                    float tts = mMusicPlayerView.getThread().TimeToSelect;
 	                    tts = tts*10f;
 	                    tts = Math.round(tts);
@@ -580,7 +596,7 @@ public class MainEEGmusic extends Activity implements SurfaceHolder.Callback{
 	                    
 	                    tv_consoleBoard.setTextSize(15);tv_consoleBoard.setText(mMusicPlayerView.getThread().consoleBoard);
 	                    tv_consoleLine.setTextSize(30); tv_consoleLine.setText(mMusicPlayerView.getThread().consoleLine);
-	                    	                    		                    
+	                    	*/                    		                    
 	                    // --saving data to file
 	                    /* String filename ="so_v2_<date_time>.csv";
 	                    Time now = new Time();

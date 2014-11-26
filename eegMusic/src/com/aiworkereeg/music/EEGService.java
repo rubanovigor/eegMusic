@@ -121,14 +121,17 @@ public class EEGService extends IntentService{
 		                    case TGDevice.STATE_NOT_FOUND:
 		                    	//Toast.makeText(this, "neurosky mindwave mobile was not found", Toast.LENGTH_SHORT).show();
 		                    	BTstatus = "not found";
+		                    	mBroadcaster.broadcastIntentWithState(Constants.STATE_EEGnotFound); 
 		                        break;
 		                    case TGDevice.STATE_NOT_PAIRED:
 		                    	//Toast.makeText(this, "neurosky mindwave mobile not paired !", Toast.LENGTH_SHORT).show();
 		                    	BTstatus = "not paired";
+		                    	mBroadcaster.broadcastIntentWithState(Constants.STATE_EEGnotPaired); 
 		                        break;
 		                    case TGDevice.STATE_DISCONNECTED:
 		                    	//Toast.makeText(this, "Disconnected", Toast.LENGTH_SHORT).show();
 		                    	BTstatus = "disconnected";
+		                    	mBroadcaster.broadcastIntentWithState(Constants.STATE_Disconnected); 
 		                    	break;
 		                    }
 

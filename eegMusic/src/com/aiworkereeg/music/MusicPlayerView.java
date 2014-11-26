@@ -114,7 +114,7 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
       private int BackGr_ImageScalePi = 1; //  Pi/BackGr_ImageScalePi
                 
       /** X/Y of lander center. */
-      double pX;        double pY;
+      double pX = -500;        double pY = -500;
               
       //================================        
       /* State-tracking constants */
@@ -192,7 +192,7 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
               CursorX = (float) pX - CursorR;
               CursorY_delta = BackGr_ImageScale*BackGr_W/2;
               //CircleRadius = BackGr_ImageScale*BackGr_W / 2.7f;
-              CircleRadius = 280f;
+              CircleRadius = (float) ((pX)/1.85);
               CursorX_delta = StarR*2f;
             //==========InterfaceBody===========
              
@@ -442,6 +442,12 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
           ApM = At+Med;                       
           AmM = At-Med;
           	// 1s: 10 * 0.015 = 0.15 
+         /* if (accel_alpha>=2.5f) {accel_alpha = 2.5f; scale_obj = scale_obj_rot; }  // -- limit rotational speed
+          if (accel_alpha>=2f && accel_alpha<=2.5f) {scale_obj = scale_obj_rot; }
+          if (accel_alpha>=1.5f && accel_alpha<2.0f) {scale_obj = scale_obj_rot; }
+          if (accel_alpha>=1f && accel_alpha<1.5f) {scale_obj = scale_obj_rot; }          
+          if (accel_alpha<=0f){ accel_alpha = 0f; scale_obj = scale_obj_rot;  }*/
+          
           if (accel_alpha>=2.5f) {accel_alpha = 2.5f; scale_obj = scale_obj_rot; }  // -- limit rotational speed
           if (accel_alpha>=2f && accel_alpha<=2.5f) {scale_obj = scale_obj_rot; }
           if (accel_alpha>=1.5f && accel_alpha<2.0f) {scale_obj = scale_obj_rot; }
@@ -516,11 +522,13 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
 	            	SelectedIcon.setScale(scale_obj*1.4f);
 	            	
 	            	// -- play / stop
-	            	if (curr_alpha_obj1 > 360 - delta/2  ||  curr_alpha_obj1 <= delta/2){ 
+	            	//if (curr_alpha_obj1 > 360 - delta/2  ||  curr_alpha_obj1 <= delta/2){ 
+	            	if (curr_alpha_obj1 > delta/2  &&  curr_alpha_obj1 <= 360-delta/2){ 
 	            		SelectedIcon.updatePhysics(alpha_rot[rs1.nextInt(2)], curr_alpha_obj1, CircleRadius, pX, pY); 
 	            	}            		            	
 	            	// -- play next
-	            	if (curr_alpha_obj2 > 360 - delta/2  ||  curr_alpha_obj2 <= delta/2){
+	            	//if (curr_alpha_obj2 > 360 - delta/2  ||  curr_alpha_obj2 <= delta/2){
+	            	if (curr_alpha_obj2 > delta/2  &&  curr_alpha_obj2 <= 360-delta/2){ 
 	            		SelectedIcon.updatePhysics(alpha_rot[rs1.nextInt(2)], curr_alpha_obj2, CircleRadius, pX, pY); 
 	            	}           	            	                  	
 	
@@ -530,13 +538,15 @@ class MusicPlayerView extends SurfaceView implements SurfaceHolder.Callback {
 	            if (accel_alpha <= 0 && flag_Cursor == true && TimeToSelect<=0){            	
          	
 	            	// -- play / stop
-	            	if (curr_alpha_obj1 > 360 - delta/2  ||  curr_alpha_obj1 <= delta/2){ 
+	            	//if (curr_alpha_obj1 > 360 - delta/2  ||  curr_alpha_obj1 <= delta/2){ 
+	            	if (curr_alpha_obj1 > delta/2  &&  curr_alpha_obj1 <= 360-delta/2){ 
 	            		if (play_flag == false)	{ play_flag = true; stop_flag = false; sel_action_i = 1; msgBoard = "play";}
 	            		else          			{ play_flag = false; stop_flag = true; sel_action_i = 2; msgBoard = "stop";}	            		
 	            	} 
 	            		            	
 	            	// -- play next
-	            	if (curr_alpha_obj2 > 360 - delta/2  ||  curr_alpha_obj2 <= delta/2){
+	            	//if (curr_alpha_obj2 > 360 - delta/2  ||  curr_alpha_obj2 <= delta/2){
+	            	if (curr_alpha_obj2 > delta/2  &&  curr_alpha_obj2 <= 360-delta/2){ 
 	            		next_flag = true; play_flag = true; stop_flag = false; sel_action_i = 3; 	msgBoard = "play next";
 	            	}	            	
 	            	                  	            			            	

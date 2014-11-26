@@ -74,9 +74,6 @@ public final class Constants {
     // The download is starting
     public static final int STATE_ACTION_STARTED = 0;
 
-    // The background thread is connecting to the RSS feed
-    public static final int STATE_CONNECTING = 1;
-
     // The background thread is parsing the RSS feed
     public static final int STATE_ACTION_PARSING = 2;
 
@@ -84,7 +81,11 @@ public final class Constants {
     public static final int STATE_ACTION_WRITING = 3;
 
     // The background thread is done
+    public static final int STATE_CONNECTING = 1;
     public static final int STATE_CONNECTED = 4;
+    public static final int STATE_EEGnotFound = 5;
+    public static final int STATE_EEGnotPaired = 6; 
+    public static final int STATE_Disconnected = 7;
 
     // The background thread is doing logging
     public static final int STATE_LOG = -1;
